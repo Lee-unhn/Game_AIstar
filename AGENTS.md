@@ -96,18 +96,30 @@ Closes #編號
 
 講師看過會決定要不要做，要做的會轉成新任務。還沒轉成任務之前，任何人都不動手。
 
-## 開不了 issue 時
+## 開不了 issue 時：先自己裝 GitHub CLI（gh）
 
-沒有 gh，或 gh 沒登入時，不要只回「不能發」。一定要做這三件事：
+要開 issue、留言認領、開 PR 時，先跑 `gh auth status`。不要只回「不能發」，照下面的順序自己處理。
 
-1. 把整理好的內容放在一個程式碼框裡，讓使用者一鍵複製。
-2. 給表單網址：<https://github.com/Lee-unhn/Game_AIstar/issues/new/choose>，並說明選哪一個表單（使用者的想法選「本人意見」，你發現的問題選「AI 修改意見」）。
-3. 告訴使用者想讓你以後自己發，可以裝 gh：
-   - Windows：終端機打 `winget install --id GitHub.cli`。Mac：到 <https://cli.github.com> 下載。
-   - VS Code 全部關掉再打開。
-   - 打 `gh auth login`，依序選 GitHub.com、HTTPS、Login with a web browser，到瀏覽器輸入畫面上的代碼。
+**1. 沒有 gh：你自己裝。** 告訴使用者你要安裝 GitHub CLI，然後執行：
 
-公司電腦不能裝軟體就一直用表單，效果一樣。認領任務也一樣：沒有 gh 就請使用者到 issue 留言「認領」並按 Assignees。
+| 系統 | 指令 |
+|---|---|
+| Windows | `winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements` |
+| Mac | `brew install gh`。沒有 brew 就請使用者到 <https://cli.github.com> 下載安裝檔 |
+
+裝完在同一個終端機找不到 gh 時：開一個新的終端機再試。Windows 也可以直接用 `"C:\Program Files\GitHub CLI\gh.exe"`。
+
+**2. 還沒登入：你執行，使用者在瀏覽器按。**
+
+```bash
+gh auth login --hostname github.com --git-protocol https --web
+```
+
+指令會顯示一組代碼。把代碼告訴使用者，請他在打開的瀏覽器貼上並按授權。登入要用他自己的 GitHub 帳號。不要叫使用者把 token 或密碼貼給你。
+
+**3. 確認：** `gh auth status` 顯示已登入，就回去做原本要做的事。
+
+**4. 裝不起來（公司電腦沒有權限、安裝失敗）：** 不要一直重試，改走表單。把整理好的內容放在程式碼框讓使用者複製，並給表單網址 <https://github.com/Lee-unhn/Game_AIstar/issues/new/choose>，說明選哪一個（使用者的想法選「本人意見」，你發現的問題選「AI 修改意見」）。認領任務就請使用者到 issue 留言「認領」並按 Assignees。
 
 ## 對使用者說話的方式
 
