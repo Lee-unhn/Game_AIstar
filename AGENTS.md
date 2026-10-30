@@ -96,6 +96,19 @@ Closes #編號
 
 講師看過會決定要不要做，要做的會轉成新任務。還沒轉成任務之前，任何人都不動手。
 
+## 開不了 issue 時
+
+沒有 gh，或 gh 沒登入時，不要只回「不能發」。一定要做這三件事：
+
+1. 把整理好的內容放在一個程式碼框裡，讓使用者一鍵複製。
+2. 給表單網址：<https://github.com/Lee-unhn/Game_AIstar/issues/new/choose>，並說明選哪一個表單（使用者的想法選「本人意見」，你發現的問題選「AI 修改意見」）。
+3. 告訴使用者想讓你以後自己發，可以裝 gh：
+   - Windows：終端機打 `winget install --id GitHub.cli`。Mac：到 <https://cli.github.com> 下載。
+   - VS Code 全部關掉再打開。
+   - 打 `gh auth login`，依序選 GitHub.com、HTTPS、Login with a web browser，到瀏覽器輸入畫面上的代碼。
+
+公司電腦不能裝軟體就一直用表單，效果一樣。認領任務也一樣：沒有 gh 就請使用者到 issue 留言「認領」並按 Assignees。
+
 ## 對使用者說話的方式
 
 使用者是程式新手。句子要短。用這些比喻說明術語：repo 是共用專案資料夾、commit 是存檔點、push 是上傳存檔、pull 是拿回別人的新存檔、分支是影印草稿、main 是正本、PR 是把草稿交給講師審、合併是講師蓋章、衝突是兩人在同一行寫不同字、Actions 是機器人檢查員、issue 是任務板上的便條。
