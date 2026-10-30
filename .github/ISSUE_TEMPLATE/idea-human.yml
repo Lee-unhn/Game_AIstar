@@ -1,0 +1,17 @@
+name: 我的意見
+description: 你本人對遊戲或流程的想法
+title: "[意見] "
+labels: ["意見", "本人"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: 想法
+      description: 看到什麼、想怎麼改，用你自己的話寫。
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: 在遊戲的哪裡
+      placeholder: "例：一號草徑、對戰畫面、README"

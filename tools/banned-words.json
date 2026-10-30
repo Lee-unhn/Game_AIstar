@@ -1,0 +1,20 @@
+{
+  "說明": "既有怪獸收集遊戲的作品名、角色、道具與地名。出現在 repo 任何文字檔都會讓 check 失敗。本檔與 tools/check.mjs 不掃描。",
+  "words": [
+    "寶可夢", "精靈寶可夢", "神奇寶貝", "口袋妖怪", "口袋怪獸",
+    "皮卡丘", "噴火龍", "妙蛙種子", "妙蛙花", "小火龍", "傑尼龜", "水箭龜",
+    "超夢", "伊布", "卡比獸", "胖丁", "耿鬼", "可達鴨", "喵喵怪",
+    "路卡利歐", "甲賀忍蛙", "快龍", "鯉魚王", "暴鯉龍",
+    "精靈球", "寶貝球", "大師球", "大木博士", "火箭隊", "關都", "城都", "豐緣", "神奧",
+
+    "Pokemon", "Pokémon", "Pocket Monsters", "Pokeball", "Poke Ball", "Poké Ball", "Pokedex", "Pokédex",
+    "Pikachu", "Charizard", "Charmander", "Bulbasaur", "Venusaur", "Squirtle", "Blastoise",
+    "Mewtwo", "Eevee", "Snorlax", "Jigglypuff", "Gengar", "Psyduck", "Meowth",
+    "Lucario", "Greninja", "Dragonite", "Magikarp", "Gyarados",
+    "Team Rocket", "Professor Oak", "Kanto", "Johto", "Hoenn", "Sinnoh",
+
+    "ポケモン", "ポケットモンスター", "モンスターボール",
+    "ピカチュウ", "リザードン", "ヒトカゲ", "フシギダネ", "ゼニガメ",
+    "ミュウツー", "イーブイ", "カビゴン", "ゲンガー", "コダック", "ルカリオ", "ゲッコウガ", "サトシ"
+  ]
+}

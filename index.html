@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>AI 星靈物語</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="app">
+    <canvas id="screen" width="480" height="320" aria-label="遊戲畫面"></canvas>
+    <div id="load-errors" hidden></div>
+    <p id="hint">方向鍵或 WASD 移動　Z／Enter 確認　X／Esc 取消、開隊伍</p>
+    <div id="touch" aria-label="觸控按鈕">
+      <div class="dpad">
+        <button type="button" data-btn="up" class="up" aria-label="上">▲</button>
+        <button type="button" data-btn="left" class="left" aria-label="左">◀</button>
+        <button type="button" data-btn="right" class="right" aria-label="右">▶</button>
+        <button type="button" data-btn="down" class="down" aria-label="下">▼</button>
+      </div>
+      <div class="actions">
+        <button type="button" data-btn="cancel" class="cancel" aria-label="取消">X</button>
+        <button type="button" data-btn="confirm" class="confirm" aria-label="確認">Z</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- 引擎（底層）。順序有依賴關係，改動要先開 issue。 -->
+  <script src="js/core.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/tiles.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/overworld.js"></script>
+  <script src="js/battle.js"></script>
+  <script src="js/main.js"></script>
+  <!-- 載入器會自己掃描 data/ 資料夾，不需要在這裡登記資料檔。 -->
+  <script src="js/loader.js"></script>
+</body>
+</html>

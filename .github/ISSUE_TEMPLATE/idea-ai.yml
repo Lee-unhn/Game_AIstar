@@ -1,0 +1,44 @@
+name: AI 修改意見
+description: 把 AI 整理好的修改意見貼上來
+title: "[AI 意見] "
+labels: ["意見", "AI 意見"]
+body:
+  - type: input
+    id: which
+    attributes:
+      label: 哪個 AI
+      placeholder: "例：Copilot Agent、Claude Code"
+    validations:
+      required: true
+  - type: textarea
+    id: saw
+    attributes:
+      label: 看到什麼
+      description: 實際觀察到的事。
+    validations:
+      required: true
+  - type: input
+    id: file
+    attributes:
+      label: 在哪個檔
+      placeholder: "例：js/battle.js 第 120 行"
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 建議
+      description: 建議怎麼改。
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 嚴重度
+      description: 重大是遊戲或存檔壞掉、洩漏資料；一般是影響使用；僅記錄是不影響使用。
+      options:
+        - 重大
+        - 一般
+        - 僅記錄
+    validations:
+      required: true

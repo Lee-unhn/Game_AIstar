@@ -1,0 +1,38 @@
+name: 任務
+description: 開一張任務便條，讓大家認領
+title: "[任務] "
+labels: ["任務"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 要做什麼
+      description: 用一兩句話講清楚。
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: 完成標準
+      description: 做到哪裡算完成，要能實際確認。
+      placeholder: "例：草徑裡遇得到新星靈，node tools/check.mjs 通過"
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: 會動到哪些檔
+      description: 新資料請先寫好編號，避免撞號。
+      placeholder: "例：新增 data/monsters/006.js"
+    validations:
+      required: true
+  - type: dropdown
+    id: level
+    attributes:
+      label: 難度
+      options:
+        - 簡單
+        - 普通
+        - 困難
+    validations:
+      required: true

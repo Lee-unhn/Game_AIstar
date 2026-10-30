@@ -1,0 +1,23 @@
+name: 機器人檢查員
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 檢查資料檔與全 repo 文字
+        run: node tools/check.mjs
+      - name: 跑測試
+        run: node --test "tests/*.test.mjs"

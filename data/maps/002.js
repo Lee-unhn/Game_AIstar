@@ -1,0 +1,36 @@
+Game.registerMap({
+  id: "route_one",
+  name: "一號草徑",
+  tiles: [
+    "TTTTTTTTTTTTTTTTTTTTTTTT",
+    "T......ggggg......ggggTT",
+    "T..TT..ggggg..TT..ggggTT",
+    "T..TT..ggggg..TT..ggggTT",
+    "T.........p.........ggTT",
+    "T...gggg..p..gggg.....TT",
+    "T...gggg..p..gggg..www.T",
+    "T...gggg..p..gggg..www.T",
+    "pppppppppppp.......www.T",
+    "T.....p.........ggg....T",
+    "T.ggg.p..TTT....ggg....T",
+    "T.ggg.p..TTT....ggg....T",
+    "T.ggg.pp.........ggg...T",
+    "T........f......f......T",
+    "T......................T",
+    "TTTTTTTTTTTTTTTTTTTTTTTT",
+  ],
+  spawn: { x: 1, y: 8 },
+  npcs: [
+    {
+      x: 12,
+      y: 4,
+      text: "東邊山頭那座發光的塔，叫做星塔。入口還封著，等人來打開。",
+    },
+  ],
+  exits: [{ x: 0, y: 8, toMap: "glimmer_town", toX: 18, toY: 7 }],
+  encounters: [
+    { monster: "night_moth", minLevel: 3, maxLevel: 5, weight: 60 },
+    { monster: "moss_turtle", minLevel: 3, maxLevel: 5, weight: 40 },
+  ],
+  encounterRate: 0.2,
+});

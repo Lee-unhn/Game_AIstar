@@ -1,0 +1,95 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #1b2138;
+  color: #e8ecf8;
+  font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans CJK TC", sans-serif;
+  overscroll-behavior: none;
+}
+
+#app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+#screen {
+  display: block;
+  width: 480px;
+  height: 320px;
+  background: #000;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  border: 3px solid #39456e;
+  box-sizing: content-box;
+}
+
+#hint {
+  margin: 0;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #aab4d4;
+  text-align: center;
+}
+
+#load-errors {
+  max-width: 480px;
+  margin: 0 16px;
+  padding: 8px 12px;
+  background: #5c1f2b;
+  border: 2px solid #e0606f;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#touch {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  padding: 0 16px;
+  justify-content: space-between;
+  align-items: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#touch button {
+  appearance: none;
+  border: 2px solid #5b6a9e;
+  border-radius: 8px;
+  background: #2b3556;
+  color: #e8ecf8;
+  font-size: 18px;
+  font-weight: bold;
+  touch-action: none;
+}
+
+#touch button.active { background: #55679f; }
+
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-template-rows: repeat(3, 52px);
+}
+.dpad .up { grid-column: 2; grid-row: 1; }
+.dpad .left { grid-column: 1; grid-row: 2; }
+.dpad .right { grid-column: 3; grid-row: 2; }
+.dpad .down { grid-column: 2; grid-row: 3; }
+
+.actions { display: flex; gap: 14px; align-items: center; }
+#touch .actions button { width: 68px; height: 68px; border-radius: 50%; }
+#touch .actions .confirm { background: #7a3350; border-color: #c76a8e; margin-bottom: 28px; }
+
+/* 手指操作的裝置才顯示觸控按鈕 */
+@media (pointer: coarse) {
+  #touch { display: flex; }
+  #hint { display: none; }
+}

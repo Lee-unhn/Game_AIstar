@@ -1,0 +1,31 @@
+name: 回報錯誤
+description: 遊戲有地方壞掉了
+title: "[錯誤] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: 怎麼發生的
+      description: 一步一步寫，照著做要能重現。
+      placeholder: "1. 走進一號草徑\n2. 遇到野生星靈\n3. 按星晶"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 本來以為會怎樣
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 實際發生什麼
+      description: 有截圖就貼上。截圖請避開個人資料。
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: 用什麼玩
+      placeholder: "例：Windows Chrome、iPhone Safari"
