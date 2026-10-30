@@ -4,6 +4,14 @@
 
 遊戲資料格式見 `docs/DATA_FORMAT.md`，架構見 `docs/ARCHITECTURE.md`。
 
+## 使用者第一次開工
+
+如果使用者還沒給你任務，直接這樣告訴他：
+
+> 打開任務板，先看置頂那張。挑標籤「新手」的任務，把 issue 網址貼給你的 AI，叫它照 AGENTS.md 做。
+>
+> 任務板：https://github.com/Lee-unhn/Game_AIstar/issues?q=is%3Aissue+is%3Aopen+label%3A%E4%BB%BB%E5%8B%99+no%3Aassignee
+
 ## 任務循環
 
 照順序做，每一步做完才進下一步。

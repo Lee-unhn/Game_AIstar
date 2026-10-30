@@ -24,6 +24,10 @@
 
 ## 接任務、提意見
 
+**打開任務板，先看置頂那張。挑標籤「新手」的任務，把 issue 網址貼給你的 AI，叫它照 AGENTS.md 做。**
+
+[打開任務板](https://github.com/Lee-unhn/Game_AIstar/issues?q=is%3Aissue+is%3Aopen+label%3A%E4%BB%BB%E5%8B%99+no%3Aassignee)
+
 - **接任務：** 到 [任務板](https://github.com/Lee-unhn/Game_AIstar/issues?q=is%3Aissue+is%3Aopen+label%3A任務) 挑一張沒人認領的便條，留言「認領」。
 - **提意見、開任務、回報錯誤：** 到 [issue 表單](https://github.com/Lee-unhn/Game_AIstar/issues/new/choose) 選一種填寫。你的 AI 想提修改意見，也走這裡的「AI 修改意見」表單。
 
