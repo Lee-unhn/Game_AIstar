@@ -72,7 +72,7 @@
         R.text("遇到星靈後，這裡會顯示資料。", 202, 78, { size: 15 });
         return;
       }
-      R.sprite(species.sprite, 292, 64, 4);
+      Game.Art.monster(species, 292, 64, 4);
       R.text(species.name, 204, 142);
       R.typeLabel(species.type, 419, 140);
       R.wrap(species.description, 244, 15).slice(0, 3).forEach((line, i) => {

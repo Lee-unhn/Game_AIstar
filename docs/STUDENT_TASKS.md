@@ -17,7 +17,7 @@
 | 存檔和復原 | 保存隊伍、通關、圖鑑與道具。舊存檔補預設值，重開先確認 | [#48 顯示存檔狀態](https://github.com/Lee-unhn/Game_AIstar/issues/48) |
 | 隊伍管理 | 看血量、等級、招式名稱，可調整隊首並保存 | [#49 隊伍詳情](https://github.com/Lee-unhn/Game_AIstar/issues/49) |
 
-要做圖片題時，可從 [課堂美術素材包](../art/classroom/README.md) 取用場景、透明星靈、角色與道具，或參照生成提示詞延伸原創素材。預設場景、星靈點陣和操作介面沿用原本設計。
+要做圖片題時，可從 [課堂美術素材包](../art/classroom/README.md) 取用場景、透明星靈、角色與道具，或參照生成提示詞延伸原創素材。
 
 ## 每張 issue 的交付紀錄
 
