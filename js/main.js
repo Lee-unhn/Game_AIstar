@@ -111,7 +111,7 @@
     draw() {
       const R = Game.Render;
       R.rect(0, 0, Game.WIDTH, Game.HEIGHT, "#1a2350");
-      if (!Game.Art.title() && titleArt.complete && titleArt.naturalWidth) R.ctx.drawImage(titleArt, 0, 0);
+      if (titleArt.complete && titleArt.naturalWidth) R.ctx.drawImage(titleArt, 0, 0);
       stars.forEach((s) => {
         if (Math.sin(titleClock / 400 + s.phase) > -0.2) R.rect(s.x, s.y, 2, 2, "#ffe9a8");
       });
@@ -169,7 +169,7 @@
         const x = 24 + offset * 148;
         R.box(x, 54, 136, 126);
         if (i === starterCursor) R.rect(x, 54, 136, 4, R.COLORS.select);
-        Game.Art.monster(species, x + 36, 66, 4);
+        R.sprite(species.sprite, x + 36, 66, 4);
         R.text(species.name, x + 68, 134, { align: "center" });
         R.typeLabel(species.type, x + 55, 155);
       });
