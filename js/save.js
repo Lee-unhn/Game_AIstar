@@ -16,11 +16,11 @@
 
   // 只留下目前遊戲認得的內容
   function sanitizeMonster(raw) {
-    if (!raw || !Game.monsters[raw.species]) return null;
+    if (!raw || !Object.hasOwn(Game.monsters, raw.species)) return null;
     const level = Math.min(Game.Rules.MAX_LEVEL, Math.max(1, Math.floor(Number(raw.level)) || 1));
     const species = Game.monsters[raw.species];
     const maxHp = Game.Rules.statsFor(species, level).maxHp;
-    let moves = Array.isArray(raw.moves) ? raw.moves.filter((id) => Game.moves[id]) : [];
+    let moves = Array.isArray(raw.moves) ? raw.moves.filter((id) => Object.hasOwn(Game.moves, id)) : [];
     if (!moves.length) moves = Game.Rules.learnedMoves(species, level);
     if (!moves.length) return null;
     const hp = Number(raw.hp);
@@ -28,7 +28,7 @@
     return {
       species: raw.species,
       level,
-      exp: Number.isFinite(exp) ? exp : Game.Rules.expForLevel(level),
+      exp: Math.max(Game.Rules.expForLevel(level), Number.isFinite(exp) ? exp : 0),
       hp: Number.isFinite(hp) ? Math.min(maxHp, Math.max(0, Math.floor(hp))) : maxHp,
       moves: moves.slice(-Game.Rules.MAX_MOVES),
     };
@@ -41,6 +41,14 @@
 
     const state = Game.newState();
     state.party = party;
+    const speciesIds = (ids) => Array.isArray(ids)
+      ? ids.filter((id) => typeof id === "string" && Object.hasOwn(Game.monsters, id)) : [];
+    state.caught = [...new Set([...speciesIds(raw.caught), ...party.map((m) => m.species)])];
+    state.seen = [...new Set([...speciesIds(raw.seen), ...state.caught])];
+    for (const id of Game.itemIds) {
+      const count = raw.inventory?.[id];
+      if (Number.isInteger(count) && count >= 0) state.inventory[id] = Math.min(99, count);
+    }
     if (Array.isArray(raw.defeatedTrainers)) {
       state.defeatedTrainers = raw.defeatedTrainers.filter((id) => typeof id === "string");
     }

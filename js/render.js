@@ -114,6 +114,17 @@
       lines.forEach((line, i) => Render.text(line, 20, top + 16 + i * 24));
     },
 
+    reveal(lines, elapsed) {
+      let remaining = Math.floor(elapsed / 24);
+      const visible = lines.map((line) => {
+        const chars = Array.from(line);
+        const part = chars.slice(0, Math.max(0, remaining)).join("");
+        remaining -= chars.length;
+        return part;
+      });
+      return { lines: visible, complete: remaining >= 0 };
+    },
+
     // 選單游標（小三角形）
     cursor(x, y) {
       ctx.fillStyle = COLORS.select;

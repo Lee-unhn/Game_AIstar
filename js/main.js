@@ -151,6 +151,7 @@
       if (I.pressed("cancel")) { Game.go("title"); return; }
       if (I.pressed("confirm")) {
         Game.state.party = [Game.createMonster(starters[starterCursor], Game.START_LEVEL)];
+        Game.recordSpecies(starters[starterCursor], true);
         Game.Save.write();
         Game.fade(() => Game.go("overworld"));
       }

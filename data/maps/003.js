@@ -16,9 +16,11 @@ Game.registerMap({
   spawn: { x: 1, y: 5 },
   npcs: [],
   exits: [{ x: 0, y: 5, toMap: "route_one", toX: 22, toY: 14 }, { x: 15, y: 5, toMap: "mist_harbor", toX: 1, toY: 5 }],
-  encounters: [{ monster: "night_moth", minLevel: 5, maxLevel: 6, weight: 25 },
+  encounters: [
+    { monster: "night_moth", minLevel: 5, maxLevel: 6, weight: 25 },
     { monster: "moss_turtle", minLevel: 5, maxLevel: 6, weight: 25 },
     { monster: "coal_gecko", minLevel: 5, maxLevel: 7, weight: 30 },
-    { monster: "lantern_sprite", minLevel: 5, maxLevel: 7, weight: 20 }],
+    { monster: "lantern_sprite", minLevel: 5, maxLevel: 7, weight: 20 },
+  ],
   encounterRate: 0.17,
 });

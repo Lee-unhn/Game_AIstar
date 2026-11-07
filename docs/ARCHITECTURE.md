@@ -9,7 +9,7 @@
 ```mermaid
 flowchart TB
   subgraph build["學員可以蓋的區"]
-    data["資料層 data/<br/>monsters、moves、maps<br/>一物一檔"]
+    data["資料層 data/<br/>monsters、moves、maps、items<br/>一物一檔"]
   end
   subgraph base["底層，改要先開 issue"]
     rules["規則層 js/rules.js<br/>傷害、屬性、捕捉、升級<br/>純函式"]
@@ -37,7 +37,7 @@ flowchart TD
   run --> any{"這批有任何檔案嗎？"}
   any -- "有" --> nextBatch["下一批 021 到 040"]
   nextBatch --> batch
-  any -- "沒有" --> folder{"三個資料夾都掃完了？"}
+  any -- "沒有" --> folder{"四個資料夾都掃完了？"}
   folder -- "還沒" --> batch
   folder -- "掃完" --> start["Game.start 進入標題畫面"]
 ```
@@ -52,7 +52,10 @@ stateDiagram-v2
   state "選起始" as starter
   state "走動" as overworld
   state "對話" as dialog
+  state "冒險選單" as fieldMenu
   state "隊伍" as party
+  state "圖鑑" as dex
+  state "背包" as bag
   state "對戰" as battle
   state "捕捉" as capture
   state "全滅回鎮" as blackout
@@ -63,8 +66,14 @@ stateDiagram-v2
   starter --> overworld: 選好星靈
   overworld --> dialog: 對 NPC 按確認
   dialog --> overworld: 講完
-  overworld --> party: 按取消
-  party --> overworld: 按取消
+  overworld --> fieldMenu: 按取消
+  fieldMenu --> overworld: 按取消
+  fieldMenu --> party
+  fieldMenu --> dex
+  fieldMenu --> bag
+  party --> fieldMenu: 按取消
+  dex --> fieldMenu: 按取消
+  bag --> fieldMenu: 按取消
   overworld --> battle: 草叢遇怪或面向訓練家
   battle --> capture: 用星晶
   capture --> overworld: 收服成功
@@ -113,10 +122,10 @@ flowchart LR
 | 方向 | 內容 |
 |---|---|
 | 星塔擴建 | 第一層已有固定隊伍的守望者，可延伸到更高樓層 |
-| 進化 | 到某個等級變成另一隻星靈 |
-| 道具 | 回復藥、不同強度的星晶、背包畫面 |
+| 進化擴充 | 以苔石龜的等級進化為例，設計其他星靈的進化 |
+| 道具擴充 | 以凝露瓶和背包為例，新增另一種地圖恢復道具 |
 | 音效延伸 | 標題、探索和戰鬥已有合成配樂，可再加入地形音效 |
-| 存檔欄位 | 多個存檔，記錄遊玩時間與圖鑑 |
+| 存檔擴充 | 以既有單存檔為基礎，讓玩家看見存檔狀態 |
 | 手機優化 | 觸控手感、橫式畫面 |
 | 更多地圖 | 洞窟、水路、第二座城鎮 |
 | 招式效果 | 降低能力、持續傷害、優先出手 |

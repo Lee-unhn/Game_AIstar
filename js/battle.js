@@ -11,6 +11,7 @@
   const B = {
     phase: "idle",
     message: "",
+    messageTime: 0,
     queue: [],
     me: null,
     enemy: null,
@@ -38,7 +39,7 @@
   function next() {
     while (B.queue.length) {
       const step = B.queue.shift();
-      if (step.text !== null) B.message = step.text;
+      if (step.text !== null) { B.message = step.text; B.messageTime = 0; }
       if (step.fn) step.fn();
       if (B.ended) return;
       if (step.text !== null) return;
@@ -118,6 +119,7 @@
       }),
       ...(backup ? [say("守望者派出 " + nameOf(backup) + "！", () => {
         B.enemy = backup;
+        Game.recordSpecies(backup.species);
         B.enemyHpShown = backup.hp;
         B.enemyVisible = true;
       })] : [
@@ -138,16 +140,27 @@
     const oldMax = Game.statsOf(monster).maxHp;
     monster.exp += gain;
     monster.level = Rules.levelForExp(monster.exp);
-    if (monster.level <= before) return steps;
-
-    monster.hp += Game.statsOf(monster).maxHp - oldMax;
-    steps.push(say(nameOf(monster) + " 升到 Lv." + monster.level + " 了！", () => Game.Audio.play("level")));
+    if (monster.level > before) {
+      monster.hp += Game.statsOf(monster).maxHp - oldMax;
+      steps.push(say(nameOf(monster) + " 升到 Lv." + monster.level + " 了！", () => Game.Audio.play("level")));
+    }
     for (let level = before + 1; level <= monster.level; level += 1) {
       Rules.movesLearnedAt(species, level).forEach((moveId) => {
         if (!Game.moves[moveId] || monster.moves.includes(moveId)) return;
         monster.moves = Rules.addMove(monster.moves, moveId);
         steps.push(say(nameOf(monster) + " 學會了「" + Game.moves[moveId].name + "」！"));
       });
+    }
+    const target = Rules.evolutionTarget(species, before, monster.level);
+    if (target && Object.hasOwn(Game.monsters, target)) {
+      steps.push(say(nameOf(monster) + " 進化成 " + Game.monsters[target].name + "！", () => {
+        const beforeHp = Game.statsOf(monster).maxHp;
+        monster.species = target;
+        const maxHp = Game.statsOf(monster).maxHp;
+        monster.hp = Math.max(1, Math.min(maxHp, monster.hp + maxHp - beforeHp));
+        Game.recordSpecies(target, true);
+        Game.Audio.play("level");
+      }));
     }
     return steps;
   }
@@ -201,7 +214,11 @@
     B.phase = "message";
     if (B.captureWorks) {
       B.queue = [
-        say("收服了 " + nameOf(B.enemy) + "！", () => { Game.Audio.play("win"); Game.state.party.push(B.enemy); }),
+        say("收服了 " + nameOf(B.enemy) + "！", () => {
+          Game.Audio.play("win");
+          Game.state.party.push(B.enemy);
+          Game.recordSpecies(B.enemy.species, true);
+        }),
         act(() => finish()),
       ];
     } else {
@@ -311,7 +328,8 @@
       R.text("命中 " + chosen.accuracy, 346, Game.HEIGHT - 34, { size: 14 });
       return;
     }
-    R.messageBox(R.wrap(B.message, Game.WIDTH - 40).slice(0, 3));
+    const lines = R.wrap(B.message, Game.WIDTH - 40).slice(0, 3);
+    R.messageBox(B.phase === "message" ? R.reveal(lines, B.messageTime).lines : lines);
   }
 
   Game.scenes.battle = {
@@ -319,6 +337,7 @@
       B.trainer = opponent.enemies ? opponent : null;
       const enemy = B.trainer ? B.trainer.enemies.shift() : opponent;
       B.enemy = enemy;
+      Game.recordSpecies(enemy.species);
       B.me = firstAlive();
       B.phase = "message";
       B.ended = false;
@@ -337,6 +356,7 @@
 
     update(dt) {
       const I = Game.Input;
+      B.messageTime += dt;
       B.myHpShown = approach(B.myHpShown, B.me.hp, dt);
       B.enemyHpShown = approach(B.enemyHpShown, B.enemy.hp, dt);
       if (B.shakeMs > 0) B.shakeMs -= dt;
@@ -346,8 +366,10 @@
       else if (B.phase === "capture") {
         B.captureMs -= dt;
         if (B.captureMs <= 0) finishCapture();
-      } else if (B.phase === "message" && B.myHpShown === B.me.hp && B.enemyHpShown === B.enemy.hp && I.pressed("confirm")) {
-        next();
+      } else if (B.phase === "message" && I.pressed("confirm")) {
+        const lines = Game.Render.wrap(B.message, Game.WIDTH - 40).slice(0, 3);
+        if (!Game.Render.reveal(lines, B.messageTime).complete) B.messageTime = Infinity;
+        else if (B.myHpShown === B.me.hp && B.enemyHpShown === B.enemy.hp) next();
       }
     },
 

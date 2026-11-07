@@ -14,6 +14,8 @@
     monsters: {},
     moves: {},
     maps: {},
+    items: {},
+    itemIds: [],
     monsterIds: [],
     moveIds: [],
     mapIds: [],
@@ -43,6 +45,7 @@
 
   Game.registerMonster = (def) => register(Game.monsters, Game.monsterIds, "星靈", def);
   Game.registerMove = (def) => register(Game.moves, Game.moveIds, "招式", def);
+  Game.registerItem = (def) => register(Game.items, Game.itemIds, "道具", def);
   Game.registerMap = (def) => register(Game.maps, Game.mapIds, "地圖", def);
 
   // 編號最小的地圖就是起始地圖，也是全滅時回去的地方。
@@ -54,8 +57,16 @@
       player: { mapId: start.id, x: start.spawn.x, y: start.spawn.y, dir: "down" },
       party: [],
       defeatedTrainers: [],
+      seen: [],
+      caught: [],
+      inventory: Object.fromEntries(Game.itemIds.map((id) => [id, Game.items[id].starterCount || 0])),
       crystals: Game.CRYSTAL_MAX,
     };
+  };
+
+  Game.recordSpecies = function (id, caught = false) {
+    if (!Game.state.seen.includes(id)) Game.state.seen.push(id);
+    if (caught && !Game.state.caught.includes(id)) Game.state.caught.push(id);
   };
 
   Game.createMonster = (speciesId, level) =>

@@ -1,6 +1,6 @@
 Game.registerMonster({
   "id": "coal_gecko",
-  "name": "炭尾蜥",
+  "name": "窯斑螈",
   "type": "焰",
   "baseStats": {
     "hp": 51,
@@ -20,7 +20,7 @@ Game.registerMonster({
       "move": "ash_burst"
     }
   ],
-  "description": "從熔岩石縫孵出，尾巴是暖暖的火炭。",
+  "description": "睡在陶窯留下的暖灰裡，身上的斑紋會隨溫度發亮。",
   "sprite": {
     "palette": {
       "o": "#2e243a",

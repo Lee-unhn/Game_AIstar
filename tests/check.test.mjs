@@ -207,3 +207,16 @@ test("訓練家隊伍不能引用不存在的星靈", () => {
     assert.match(out, /data\/maps\/005\.js.*trainer/);
   });
 });
+
+test("不存在的進化目標會被擋", () => {
+  withCopy((dir) => {
+    const name = "005.js";
+    const def = readData(dir, "monsters", "Monster", name);
+    def.evolution.to = "missing_evolution";
+    writeFileSync(join(dir, "data", "monsters", name), `Game.registerMonster(${JSON.stringify(def)});
+`);
+    const { code, out } = runCheck(dir);
+    assert.equal(code, 1, out);
+    assert.match(out, /evolution/);
+  });
+});

@@ -117,6 +117,14 @@
     TYPES,
     STRONG_AGAINST,
     MAX_LEVEL,
+    evolutionTarget(species, before, after) {
+      const evolution = species.evolution;
+      const canEvolve = after > before || after === MAX_LEVEL;
+      return evolution && canEvolve && after >= evolution.level ? evolution.to : null;
+    },
+    healingAmount(hp, maxHp, amount) {
+      return hp > 0 && hp < maxHp ? Math.min(maxHp - hp, amount) : 0;
+    },
     MAX_MOVES,
     typeMultiplier,
     statsFor,

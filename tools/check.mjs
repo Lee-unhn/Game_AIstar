@@ -26,6 +26,7 @@ function loadDataFile(path, kind) {
     registerMonster: wrong("registerMonster"),
     registerMove: wrong("registerMove"),
     registerMap: wrong("registerMap"),
+    registerItem: wrong("registerItem"),
   };
   api[`register${kind}`] = (def) => registered.push(def);
   try {
@@ -135,7 +136,8 @@ function checkMoves(items, types) {
 }
 
 // ---- 星靈 ----
-function checkMonsters(items, moveIds, types) {
+function checkMonsters(items, moveIds, types, maxLevel) {
+  const monsterIds = new Set(items.map(({ def }) => def.id));
   for (const { where, def } of items) {
     requireFields(where, def, [
       ["name", isText, "要寫星靈的中文名。"],
@@ -145,6 +147,14 @@ function checkMonsters(items, moveIds, types) {
       ["description", isText, "要寫一句說明。"],
     ]);
     if ("starter" in def && typeof def.starter !== "boolean") fail(where, "欄位 starter 只能是 true 或 false。");
+
+    if ("evolution" in def) {
+      const e = def.evolution;
+      if (!e || !Number.isInteger(e.level) || e.level < 2 || e.level > maxLevel ||
+          !monsterIds.has(e.to) || e.to === def.id) {
+        fail(where, "evolution 要寫有效等級和另一隻已存在的星靈 id。");
+      }
+    }
 
     const stats = def.baseStats || {};
     for (const key of ["hp", "atk", "def", "spd"]) {
@@ -163,6 +173,19 @@ function checkMonsters(items, moveIds, types) {
     checkSprite(where, def.sprite);
   }
   if (!items.some(({ def }) => def.starter === true)) fail("data/monsters", "至少要有一隻 starter: true 的起始星靈。");
+}
+
+function checkItems(items) {
+  for (const { where, def } of items) {
+    requireFields(where, def, [
+      ["name", isText, "要寫道具的中文名。"],
+      ["description", isText, "要寫一句說明。"],
+      ["heal", (v) => Number.isInteger(v) && v > 0 && v <= 999, "要是 1 到 999 的整數。"],
+    ]);
+    if ("starterCount" in def && (!Number.isInteger(def.starterCount) || def.starterCount < 0 || def.starterCount > 99)) {
+      fail(where, "starterCount 要是 0 到 99 的整數。");
+    }
+  }
 }
 
 // ---- 地圖 ----
@@ -360,9 +383,11 @@ function main() {
   const moves = loadFolder("moves", "Move");
   const monsters = loadFolder("monsters", "Monster");
   const maps = loadFolder("maps", "Map");
+  const items = loadFolder("items", "Item");
 
   checkMoves(moves, rules.TYPES);
-  checkMonsters(monsters, new Set(moves.map((m) => m.def.id)), rules.TYPES);
+  checkMonsters(monsters, new Set(moves.map((m) => m.def.id)), rules.TYPES, rules.MAX_LEVEL);
+  checkItems(items);
   checkMaps(maps, new Set(monsters.map((m) => m.def.id)), tiles, rules.MAX_LEVEL);
   scanText();
 

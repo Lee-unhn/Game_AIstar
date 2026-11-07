@@ -14,9 +14,11 @@
 |---|---|---|
 | 移動 | 方向鍵或 WASD | 左下方向鈕 |
 | 確認、對話 | Z 或 Enter | Z 鈕 |
-| 取消、開隊伍 | X 或 Esc | X 鈕 |
+| 取消、開冒險選單 | X 或 Esc | X 鈕 |
 
 從微光鎮向東出發，穿過兩段草徑，在霧港鎮補給，再到星塔挑戰守望者。淺草和小路安全，深草可能遇到野生星靈。勝利後可以繼續探索。標題下方的按鈕可開關原創配樂與音效，遊戲會記住設定。
+
+走動時按 X 或 Esc 可打開冒險選單，切換隊伍、圖鑑和背包。圖鑑會記住遇過及收服的星靈，凝露瓶可在地圖上恢復隊員的 HP。苔石龜升到 Lv.6 可進化成林冠龜。
 
 ## 三步加入
 
@@ -33,7 +35,7 @@
 - **接任務：** 到 [任務板](https://github.com/Lee-unhn/Game_AIstar/issues?q=is%3Aissue+is%3Aopen+label%3A任務) 挑一張沒人認領的便條，留言「認領」。
 - **提意見、開任務、回報錯誤：** 到 [issue 表單](https://github.com/Lee-unhn/Game_AIstar/issues/new/choose) 選一種填寫。你的 AI 想提修改意見，也走這裡的「AI 修改意見」表單。
 
-完整步驟寫在 [CONTRIBUTING.md](CONTRIBUTING.md)。
+每個系統的可玩示例、學員任務與驗收見 [學員接手表](docs/STUDENT_TASKS.md)。完整步驟寫在 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 最重要的規則
 
