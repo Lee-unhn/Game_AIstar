@@ -187,7 +187,7 @@ function checkPoint(where, label, map, tiles, x, y) {
   }
 }
 
-function checkMaps(items, monsterIds, tiles) {
+function checkMaps(items, monsterIds, tiles, maxLevel) {
   const byId = new Map(items.map(({ def }) => [def.id, def]));
   for (const { where, def } of items) {
     if (!isText(def.name)) fail(where, "欄位 name 要寫地圖的中文名。");
@@ -212,6 +212,20 @@ function checkMaps(items, monsterIds, tiles) {
       def.npcs.forEach((npc, i) => {
         checkPoint(where, `npcs 第 ${i + 1} 筆`, def, tiles, npc.x, npc.y);
         if (!isText(npc.text)) fail(where, `npcs 第 ${i + 1} 筆的 text 要寫對話內容。`);
+        if ("trainer" in npc) {
+          const label = `npcs 第 ${i + 1} 筆的 trainer`;
+          if (!Array.isArray(npc.trainer) || !npc.trainer.length || npc.trainer.length > 6) {
+            fail(where, `${label} 要有 1 到 6 隻星靈。`);
+          } else {
+            npc.trainer.forEach((member) => {
+              if (!member || !monsterIds.has(member.monster) ||
+                  !Number.isInteger(member.level) || member.level < 1 || member.level > maxLevel) {
+                fail(where, `${label} 要引用既有的星靈，並指定有效等級。`);
+              }
+            });
+          }
+        }
+        if ("victory" in npc && !isText(npc.victory)) fail(where, "victory 要寫勝利後的對話。");
         if ("heal" in npc && typeof npc.heal !== "boolean") fail(where, `npcs 第 ${i + 1} 筆的 heal 只能是 true 或 false。`);
       });
     }
@@ -261,11 +275,11 @@ function loadTiles() {
   return tiles;
 }
 
-function loadTypes() {
+function loadRules() {
   const path = join(ROOT, "js", "rules.js");
   const context = { module: { exports: {} } };
   vm.runInNewContext(readFileSync(path, "utf8"), context, { filename: path });
-  return [...context.module.exports.TYPES];
+  return context.module.exports;
 }
 
 // ---- 全 repo 文字掃描 ----
@@ -335,10 +349,10 @@ function scanText() {
 // ---- 主流程 ----
 function main() {
   let tiles = {};
-  let types = [];
+  let rules = { TYPES: [], MAX_LEVEL: 0 };
   try {
     tiles = loadTiles();
-    types = loadTypes();
+    rules = loadRules();
   } catch (err) {
     fail("js/tiles.js 或 js/rules.js", `讀不起來：${err.message}`);
   }
@@ -347,9 +361,9 @@ function main() {
   const monsters = loadFolder("monsters", "Monster");
   const maps = loadFolder("maps", "Map");
 
-  checkMoves(moves, types);
-  checkMonsters(monsters, new Set(moves.map((m) => m.def.id)), types);
-  checkMaps(maps, new Set(monsters.map((m) => m.def.id)), tiles);
+  checkMoves(moves, rules.TYPES);
+  checkMonsters(monsters, new Set(moves.map((m) => m.def.id)), rules.TYPES);
+  checkMaps(maps, new Set(monsters.map((m) => m.def.id)), tiles, rules.MAX_LEVEL);
   scanText();
 
   notes.forEach((note) => console.log(`提醒　${note}`));

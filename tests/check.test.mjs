@@ -194,3 +194,16 @@ test("引擎用 fetch 會被擋，因為雙擊開啟時沒有網路請求可用"
     assert.match(out, /js\/main\.js 第 \d+ 行/);
   });
 });
+
+test("訓練家隊伍不能引用不存在的星靈", () => {
+  withCopy((dir) => {
+    const name = "005.js";
+    const map = readData(dir, "maps", "Map", name);
+    map.npcs[0].trainer[0].monster = "unknown_companion";
+    writeFileSync(join(dir, "data", "maps", name), `Game.registerMap(${JSON.stringify(map)});
+`);
+    const { code, out } = runCheck(dir);
+    assert.equal(code, 1, out);
+    assert.match(out, /data\/maps\/005\.js.*trainer/);
+  });
+});

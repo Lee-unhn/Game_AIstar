@@ -1,0 +1,26 @@
+Game.registerMap({
+  id: "mist_harbor",
+  name: "霧港鎮",
+  tiles: [
+    "TTTTTTTTTTTTTTTT",
+    "T..rrr....rrr..T",
+    "T..###....###..T",
+    "T.ff........ff.T",
+    "T..............T",
+    "pppppppppppppppp",
+    "T....wwwww.....T",
+    "T....wwwww.....T",
+    "T..............T",
+    "TTTTTTTTTTTTTTTT",
+  ],
+  spawn: { x: 1, y: 5 },
+  npcs: [
+    { x: 4, y: 4, heal: true, text: "先休息一下。塔門就在鎮的東邊。" },
+    { x: 8, y: 4, text: "每到起霧的夜裡，星塔就會替回港的人照亮水面。" },
+    { x: 3, y: 7, text: "看見港邊的燈了嗎？星靈會順著光，把迷路的人引回小路。" },
+    { x: 12, y: 4, text: "星塔守望者會和你切磋。多帶一隻夥伴，也能互相支援。" },
+  ],
+  exits: [{ x: 0, y: 5, toMap: "route_two", toX: 14, toY: 5 }, { x: 15, y: 5, toMap: "star_tower", toX: 1, toY: 5 }],
+  encounters: [],
+  encounterRate: 0,
+});

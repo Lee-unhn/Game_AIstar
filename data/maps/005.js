@@ -1,0 +1,25 @@
+Game.registerMap({
+  id: "star_tower",
+  name: "星塔一層",
+  tiles: [
+    "################",
+    "#..............#",
+    "#.###......###.#",
+    "#..............#",
+    "#.##........##.#",
+    "ppppppppppppppp#",
+    "#..............#",
+    "#.###......###.#",
+    "#..............#",
+    "################",
+  ],
+  spawn: { x: 1, y: 5 },
+  npcs: [
+    { x: 13, y: 5, text: "這座塔的光會為旅人指路。準備好了，就來和我切磋吧。",
+      trainer: [{ monster: "moss_turtle", level: 5 }, { monster: "night_moth", level: 5 }],
+      victory: "星塔的燈亮了！恭喜你完成第一段冒險。" },
+  ],
+  exits: [{ x: 0, y: 5, toMap: "mist_harbor", toX: 14, toY: 5 }],
+  encounters: [],
+  encounterRate: 0,
+});

@@ -53,6 +53,7 @@
     return {
       player: { mapId: start.id, x: start.spawn.x, y: start.spawn.y, dir: "down" },
       party: [],
+      defeatedTrainers: [],
       crystals: Game.CRYSTAL_MAX,
     };
   };

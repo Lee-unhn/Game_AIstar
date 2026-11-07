@@ -29,7 +29,10 @@
     },
 
     press(btn) {
-      if (!held[btn]) pressed[btn] = true;
+      if (!held[btn]) {
+        pressed[btn] = true;
+        if (btn === "confirm" || btn === "cancel") Game.Audio.play("select");
+      }
       held[btn] = true;
       if (DIRS.includes(btn)) lastDir = btn;
     },
@@ -51,7 +54,7 @@
 
   window.addEventListener("keydown", (e) => {
     const btn = KEY_MAP[e.code];
-    if (!btn) return;
+    if (!btn || e.altKey || e.ctrlKey || e.metaKey || (e.target.id === "mute" && btn === "confirm")) return;
     e.preventDefault();
     if (!e.repeat) Input.press(btn);
   });
@@ -65,12 +68,18 @@
 
   document.querySelectorAll("#touch button").forEach((el) => {
     const btn = el.dataset.btn;
+    let pointer = null;
     const down = (e) => {
+      if (pointer !== null || e.button !== 0) return;
+      pointer = e.pointerId;
+      el.setPointerCapture(pointer);
       e.preventDefault();
       el.classList.add("active");
       Input.press(btn);
     };
     const up = (e) => {
+      if (pointer !== e.pointerId) return;
+      pointer = null;
       e.preventDefault();
       el.classList.remove("active");
       Input.release(btn);
@@ -78,6 +87,11 @@
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
-    el.addEventListener("pointerleave", up);
+    el.addEventListener("lostpointercapture", up);
+    el.addEventListener("click", (e) => {
+      if (e.detail !== 0) return;
+      Input.press(btn);
+      Input.release(btn);
+    });
   });
 })();

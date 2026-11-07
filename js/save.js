@@ -41,11 +41,14 @@
 
     const state = Game.newState();
     state.party = party;
+    if (Array.isArray(raw.defeatedTrainers)) {
+      state.defeatedTrainers = raw.defeatedTrainers.filter((id) => typeof id === "string");
+    }
     const crystals = Number(raw.crystals);
     state.crystals = Number.isFinite(crystals) ? Math.max(0, Math.floor(crystals)) : Game.CRYSTAL_MAX;
 
     const p = raw.player || {};
-    if (Game.maps[p.mapId] && Game.Overworld.canStandOn(Game.maps[p.mapId], p.x, p.y)) {
+    if (Number.isInteger(p.x) && Number.isInteger(p.y) && Game.maps[p.mapId] && Game.Overworld.canStandOn(Game.maps[p.mapId], p.x, p.y)) {
       state.player = {
         mapId: p.mapId,
         x: p.x,
@@ -72,15 +75,24 @@
       }
     },
 
-    read() {
-      const store = storage();
-      if (!store) return null;
+    inspect() {
+      let text;
       try {
-        const text = store.getItem(KEY);
-        return text ? sanitize(JSON.parse(text)) : null;
-      } catch (err) {
-        return null;
+        text = storage()?.getItem(KEY);
+      } catch {
+        return { state: null, damaged: false };
       }
+      if (text === null || text === undefined) return { state: null, damaged: false };
+      try {
+        const state = sanitize(JSON.parse(text));
+        return { state, damaged: !state };
+      } catch {
+        return { state: null, damaged: true };
+      }
+    },
+
+    read() {
+      return Game.Save.inspect().state;
     },
 
     clear() {

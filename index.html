@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>AI 星靈物語</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -11,6 +11,7 @@
     <canvas id="screen" width="480" height="320" aria-label="遊戲畫面"></canvas>
     <div id="load-errors" hidden></div>
     <p id="hint">方向鍵或 WASD 移動　Z／Enter 確認　X／Esc 取消、開隊伍</p>
+    <button id="mute" type="button">配樂與音效：開</button>
     <div id="touch" aria-label="觸控按鈕">
       <div class="dpad">
         <button type="button" data-btn="up" class="up" aria-label="上">▲</button>
@@ -29,6 +30,7 @@
   <script src="js/core.js"></script>
   <script src="js/rules.js"></script>
   <script src="js/tiles.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/input.js"></script>
   <script src="js/render.js"></script>
   <script src="js/save.js"></script>

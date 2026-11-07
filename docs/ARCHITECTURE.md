@@ -13,7 +13,7 @@ flowchart TB
   end
   subgraph base["底層，改要先開 issue"]
     rules["規則層 js/rules.js<br/>傷害、屬性、捕捉、升級<br/>純函式"]
-    engine["引擎層 js/<br/>core、tiles、input、render<br/>overworld、battle、save、main、loader"]
+    engine["引擎層 js/<br/>core、tiles、input、audio、render<br/>overworld、battle、save、main、loader"]
     screen["畫面層 index.html 與 canvas"]
     robot["檢查 tools/、tests/、.github/"]
   end
@@ -65,11 +65,12 @@ stateDiagram-v2
   dialog --> overworld: 講完
   overworld --> party: 按取消
   party --> overworld: 按取消
-  overworld --> battle: 草叢遇怪
+  overworld --> battle: 草叢遇怪或面向訓練家
   battle --> capture: 用星晶
   capture --> overworld: 收服成功
   capture --> battle: 星晶裂開
   battle --> overworld: 打贏或逃走
+  battle --> battle: 訓練家派出下一隻
   battle --> blackout: 隊伍全倒
   blackout --> overworld: 回到鎮上並治療
 ```
@@ -111,10 +112,10 @@ flowchart LR
 
 | 方向 | 內容 |
 |---|---|
-| 星塔與訓練家 | 有固定隊伍的對手、一層一層往上挑戰的據點 |
+| 星塔擴建 | 第一層已有固定隊伍的守望者，可延伸到更高樓層 |
 | 進化 | 到某個等級變成另一隻星靈 |
 | 道具 | 回復藥、不同強度的星晶、背包畫面 |
-| 音效 | 用程式合成的走路、攻擊、勝利音效，不用外部音檔 |
+| 音效延伸 | 標題、探索和戰鬥已有合成配樂，可再加入地形音效 |
 | 存檔欄位 | 多個存檔，記錄遊玩時間與圖鑑 |
 | 手機優化 | 觸控手感、橫式畫面 |
 | 更多地圖 | 洞窟、水路、第二座城鎮 |

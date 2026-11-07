@@ -72,13 +72,14 @@
         defense: Game.statsOf(defender).def,
         multiplier,
       });
+      Game.Audio.play("hit");
       defender.hp = Math.max(0, defender.hp - dealt);
       B.shakeMs = 280;
       B.shakeSide = defender === B.enemy ? "enemy" : "me";
 
       const follow = [];
-      if (multiplier > 1) follow.push(say("效果很好！"));
-      if (multiplier < 1) follow.push(say("效果不太好。"));
+      if (multiplier > 1) follow.push(say("效果絕佳！"));
+      if (multiplier < 1) follow.push(say("效果不佳。"));
       if (defender.hp <= 0) {
         B.queue = [];
         follow.push(...(defender === B.enemy ? winSteps() : faintSteps()));
@@ -105,13 +106,28 @@
 
   function winSteps() {
     const enemy = B.enemy;
+    const backup = B.trainer && B.trainer.enemies.shift();
     const gain = Rules.expGain(speciesOf(enemy).expYield, enemy.level);
     return [
-      say(nameOf(enemy) + " 倒下了。", () => { B.enemyVisible = false; }),
+      say(nameOf(enemy) + " 倒下了。", () => {
+        B.enemyVisible = false;
+        if (!B.trainer) Game.Audio.play("win");
+      }),
       say(nameOf(B.me) + " 得到 " + gain + " 點經驗。", () => {
         pushFront(applyExp(B.me, gain));
       }),
-      act(() => finish()),
+      ...(backup ? [say("守望者派出 " + nameOf(backup) + "！", () => {
+        B.enemy = backup;
+        B.enemyHpShown = backup.hp;
+        B.enemyVisible = true;
+      })] : [
+        ...(B.trainer ? [say(B.trainer.victory || "挑戰成功！", () => {
+          Game.Audio.play("win");
+          Game.state.defeatedTrainers.push(B.trainer.trainerId);
+          Game.Save.write();
+        })] : []),
+        act(() => finish()),
+      ]),
     ];
   }
 
@@ -125,7 +141,7 @@
     if (monster.level <= before) return steps;
 
     monster.hp += Game.statsOf(monster).maxHp - oldMax;
-    steps.push(say(nameOf(monster) + " 升到 Lv." + monster.level + " 了！"));
+    steps.push(say(nameOf(monster) + " 升到 Lv." + monster.level + " 了！", () => Game.Audio.play("level")));
     for (let level = before + 1; level <= monster.level; level += 1) {
       Rules.movesLearnedAt(species, level).forEach((moveId) => {
         if (!Game.moves[moveId] || monster.moves.includes(moveId)) return;
@@ -173,6 +189,7 @@
     }
     state.crystals -= 1;
     const chance = Rules.catchChance(speciesOf(B.enemy).catchRate, B.enemy.hp, Game.statsOf(B.enemy).maxHp);
+    Game.Audio.play("crystal");
     B.captureWorks = Math.random() < chance;
     B.captureMs = CAPTURE_MS;
     B.phase = "capture";
@@ -184,7 +201,7 @@
     B.phase = "message";
     if (B.captureWorks) {
       B.queue = [
-        say("收服了 " + nameOf(B.enemy) + "！", () => { Game.state.party.push(B.enemy); }),
+        say("收服了 " + nameOf(B.enemy) + "！", () => { Game.Audio.play("win"); Game.state.party.push(B.enemy); }),
         act(() => finish()),
       ];
     } else {
@@ -204,7 +221,7 @@
   }
 
   function updateMenu(I) {
-    const count = MENU_ITEMS.length;
+    const count = B.trainer ? 1 : MENU_ITEMS.length;
     if (I.pressed("up") || I.pressed("left")) B.menuCursor = (B.menuCursor + count - 1) % count;
     if (I.pressed("down") || I.pressed("right")) B.menuCursor = (B.menuCursor + 1) % count;
     if (!I.pressed("confirm")) return;
@@ -268,9 +285,10 @@
   function drawBottom() {
     const R = Game.Render;
     if (B.phase === "menu") {
-      R.messageBox(R.wrap(B.message, 250).slice(0, 3));
+      const hints = ["查看招式、威力與命中。", "星晶可收服野生星靈，\n對方血量越低越容易。", "嘗試離開這場野生對戰。"];
+      R.messageBox([B.message, ...hints[B.menuCursor].split("\n")]);
       R.box(290, Game.HEIGHT - 92, 190, 92);
-      MENU_ITEMS.forEach((item, i) => {
+      (B.trainer ? MENU_ITEMS.slice(0, 1) : MENU_ITEMS).forEach((item, i) => {
         const label = i === 1 ? item + "（" + Game.state.crystals + "）" : item;
         const y = Game.HEIGHT - 82 + i * 25;
         R.text(label, 324, y);
@@ -297,7 +315,9 @@
   }
 
   Game.scenes.battle = {
-    enter(enemy) {
+    enter(opponent) {
+      B.trainer = opponent.enemies ? opponent : null;
+      const enemy = B.trainer ? B.trainer.enemies.shift() : opponent;
       B.enemy = enemy;
       B.me = firstAlive();
       B.phase = "message";
@@ -309,7 +329,7 @@
       B.myHpShown = B.me.hp;
       B.enemyHpShown = enemy.hp;
       B.queue = [
-        say("野生的 " + nameOf(enemy) + " 跳出來了！"),
+        say(B.trainer ? "星塔守望者派出 " + nameOf(enemy) + "！" : "野生的 " + nameOf(enemy) + " 跳出來了！"),
         say("上吧，" + nameOf(B.me) + "！"),
       ];
       next();
@@ -326,7 +346,7 @@
       else if (B.phase === "capture") {
         B.captureMs -= dt;
         if (B.captureMs <= 0) finishCapture();
-      } else if (B.phase === "message" && I.pressed("confirm")) {
+      } else if (B.phase === "message" && B.myHpShown === B.me.hp && B.enemyHpShown === B.enemy.hp && I.pressed("confirm")) {
         next();
       }
     },
