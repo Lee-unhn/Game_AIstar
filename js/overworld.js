@@ -174,7 +174,7 @@
     for (let y = firstY; y <= firstY + 11; y += 1) {
       for (let x = firstX; x <= firstX + 16; x += 1) {
         const tile = tileAt(map, x, y);
-        if (tile) Game.Art.terrain(map.id, map.tiles[y][x], tile, x * t - camX, y * t - camY);
+        if (tile) Game.Art.terrain(map.id, map.tiles[y][x], tile, x * t - camX, y * t - camY, x, y);
       }
     }
 
@@ -203,14 +203,11 @@
     people.push({
       y: py,
       draw() {
-        const frame = step ? (walkFrame % 2) + 1 : 0;
+        const frame = step && step.ms > STEP_MS / 4 ? (walkFrame % 2) + 1 : 0;
         const x = px - camX;
         const y = py - camY;
         if (!Game.Art.person("traveler", x, y, p.dir, frame)) {
           R.sprite(personSprite("hero", p.dir, frame), x, y, 2, { flip: p.dir === "left" });
-        } else {
-          const d = DELTAS[p.dir];
-          R.rect(x + t / 2 - 2 + d.x * 7, y + t - 3 + d.y * 2, 4, 2, "#ffe27a");
         }
       },
     });
