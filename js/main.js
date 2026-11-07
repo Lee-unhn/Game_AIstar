@@ -13,6 +13,7 @@
     const real = resume ? "overworld" : name;
     scene = Game.scenes[real];
     Game.sceneName = real;
+    Game.Audio.scene(real);
     if (!resume && scene.enter) scene.enter(arg);
   };
 
@@ -55,6 +56,8 @@
   }
 
   // ---- 標題 ----
+  const titleArt = new Image();
+  titleArt.src = "art/star-tower.svg";
   const stars = Array.from({ length: 70 }, (_, i) => ({
     x: (i * 137) % Game.WIDTH,
     y: (i * 89) % 200,
@@ -63,12 +66,17 @@
   let titleItems = [];
   let titleCursor = 0;
   let titleClock = 0;
+  let titleDamaged = false;
+  let confirmRestart = false;
 
   Game.scenes.title = {
     enter() {
       titleCursor = 0;
-      titleItems = Game.Save.read()
-        ? [{ label: "繼續冒險", action: "continue" }, { label: "新的冒險", action: "new" }]
+      confirmRestart = false;
+      const save = Game.Save.inspect();
+      titleDamaged = save.damaged;
+      titleItems = save.state
+        ? [{ label: "繼續冒險", action: "continue" }, { label: "重新開始", action: "restart" }]
         : [{ label: "開始冒險", action: "new" }];
     },
     update(dt) {
@@ -77,7 +85,21 @@
       const count = titleItems.length;
       if (I.pressed("up")) titleCursor = (titleCursor + count - 1) % count;
       if (I.pressed("down")) titleCursor = (titleCursor + 1) % count;
+      if (I.pressed("cancel") && confirmRestart) {
+        Game.scenes.title.enter();
+        return;
+      }
       if (!I.pressed("confirm")) return;
+      if (titleItems[titleCursor].action === "back") {
+        Game.scenes.title.enter();
+        return;
+      }
+      if (titleItems[titleCursor].action === "restart") {
+        confirmRestart = true;
+        titleCursor = 0;
+        titleItems = [{ label: "保留存檔", action: "back" }, { label: "確認重開", action: "new" }];
+        return;
+      }
       if (titleItems[titleCursor].action === "continue") {
         Game.state = Game.Save.read() || Game.newState();
         Game.fade(() => Game.go(Game.state.party.length ? "overworld" : "starter"));
@@ -89,7 +111,7 @@
     draw() {
       const R = Game.Render;
       R.rect(0, 0, Game.WIDTH, Game.HEIGHT, "#1a2350");
-      R.rect(0, 210, Game.WIDTH, 110, "#26357a");
+      if (!Game.Art.title() && titleArt.complete && titleArt.naturalWidth) R.ctx.drawImage(titleArt, 0, 0);
       stars.forEach((s) => {
         if (Math.sin(titleClock / 400 + s.phase) > -0.2) R.rect(s.x, s.y, 2, 2, "#ffe9a8");
       });
@@ -103,6 +125,10 @@
         R.text(item.label, 198, y);
         if (i === titleCursor) R.cursor(178, y + 3);
       });
+      if (confirmRestart || titleDamaged) {
+        const note = confirmRestart ? "選好新星靈後，將覆寫原有冒險。" : "存檔讀取失敗，可以開始新的冒險。";
+        R.text(note, Game.WIDTH / 2, 242, { size: 15, align: "center", color: "#ffe9a8", shadow: "#17203c" });
+      }
       const count = "收錄 星靈 " + Game.monsterIds.length + "　招式 " + Game.moveIds.length + "　地圖 " + Game.mapIds.length;
       R.text(count, Game.WIDTH / 2, 280, { size: 14, align: "center", color: "#cfe0ff" });
     },
@@ -122,8 +148,10 @@
       const count = starters.length;
       if (I.pressed("left") || I.pressed("up")) starterCursor = (starterCursor + count - 1) % count;
       if (I.pressed("right") || I.pressed("down")) starterCursor = (starterCursor + 1) % count;
+      if (I.pressed("cancel")) { Game.go("title"); return; }
       if (I.pressed("confirm")) {
         Game.state.party = [Game.createMonster(starters[starterCursor], Game.START_LEVEL)];
+        Game.recordSpecies(starters[starterCursor], true);
         Game.Save.write();
         Game.fade(() => Game.go("overworld"));
       }
@@ -141,7 +169,7 @@
         const x = 24 + offset * 148;
         R.box(x, 54, 136, 126);
         if (i === starterCursor) R.rect(x, 54, 136, 4, R.COLORS.select);
-        R.sprite(species.sprite, x + 36, 66, 4);
+        Game.Art.monster(species, x + 36, 66, 4);
         R.text(species.name, x + 68, 134, { align: "center" });
         R.typeLabel(species.type, x + 55, 155);
       });

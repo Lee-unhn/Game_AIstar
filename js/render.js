@@ -114,6 +114,17 @@
       lines.forEach((line, i) => Render.text(line, 20, top + 16 + i * 24));
     },
 
+    reveal(lines, elapsed) {
+      let remaining = Math.floor(elapsed / 24);
+      const visible = lines.map((line) => {
+        const chars = Array.from(line);
+        const part = chars.slice(0, Math.max(0, remaining)).join("");
+        remaining -= chars.length;
+        return part;
+      });
+      return { lines: visible, complete: remaining >= 0 };
+    },
+
     // 選單游標（小三角形）
     cursor(x, y) {
       ctx.fillStyle = COLORS.select;
@@ -149,16 +160,16 @@
       const hint = document.getElementById("hint");
       const touch = document.getElementById("touch");
       const errors = document.getElementById("load-errors");
-      const below = [hint, touch, errors].reduce(
+      const below = [hint, touch, errors, document.getElementById("mute")].reduce(
         (sum, el) => sum + (el && el.offsetHeight ? el.offsetHeight + 10 : 0), 0);
-      const availW = window.innerWidth - 8;
+      const availW = document.documentElement.clientWidth - 8;
       const availH = window.innerHeight - below - 24;
       const scale = Math.floor(Math.min(availW / Game.WIDTH, availH / Game.HEIGHT));
       if (scale >= 1) {
         canvas.style.width = Game.WIDTH * Math.min(scale, 4) + "px";
         canvas.style.height = Game.HEIGHT * Math.min(scale, 4) + "px";
       } else {
-        const ratio = Math.max(0.5, Math.min(availW / Game.WIDTH, 1));
+        const ratio = Math.max(0.2, Math.min(availW / Game.WIDTH, availH / Game.HEIGHT, 1));
         canvas.style.width = Math.floor(Game.WIDTH * ratio) + "px";
         canvas.style.height = Math.floor(Game.HEIGHT * ratio) + "px";
       }

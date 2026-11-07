@@ -11,6 +11,7 @@
   const B = {
     phase: "idle",
     message: "",
+    messageTime: 0,
     queue: [],
     me: null,
     enemy: null,
@@ -38,7 +39,7 @@
   function next() {
     while (B.queue.length) {
       const step = B.queue.shift();
-      if (step.text !== null) B.message = step.text;
+      if (step.text !== null) { B.message = step.text; B.messageTime = 0; }
       if (step.fn) step.fn();
       if (B.ended) return;
       if (step.text !== null) return;
@@ -72,13 +73,14 @@
         defense: Game.statsOf(defender).def,
         multiplier,
       });
+      Game.Audio.play("hit");
       defender.hp = Math.max(0, defender.hp - dealt);
       B.shakeMs = 280;
       B.shakeSide = defender === B.enemy ? "enemy" : "me";
 
       const follow = [];
-      if (multiplier > 1) follow.push(say("效果很好！"));
-      if (multiplier < 1) follow.push(say("效果不太好。"));
+      if (multiplier > 1) follow.push(say("效果絕佳！"));
+      if (multiplier < 1) follow.push(say("效果不佳。"));
       if (defender.hp <= 0) {
         B.queue = [];
         follow.push(...(defender === B.enemy ? winSteps() : faintSteps()));
@@ -105,13 +107,29 @@
 
   function winSteps() {
     const enemy = B.enemy;
+    const backup = B.trainer && B.trainer.enemies.shift();
     const gain = Rules.expGain(speciesOf(enemy).expYield, enemy.level);
     return [
-      say(nameOf(enemy) + " 倒下了。", () => { B.enemyVisible = false; }),
+      say(nameOf(enemy) + " 倒下了。", () => {
+        B.enemyVisible = false;
+        if (!B.trainer) Game.Audio.play("win");
+      }),
       say(nameOf(B.me) + " 得到 " + gain + " 點經驗。", () => {
         pushFront(applyExp(B.me, gain));
       }),
-      act(() => finish()),
+      ...(backup ? [say("守望者派出 " + nameOf(backup) + "！", () => {
+        B.enemy = backup;
+        Game.recordSpecies(backup.species);
+        B.enemyHpShown = backup.hp;
+        B.enemyVisible = true;
+      })] : [
+        ...(B.trainer ? [say(B.trainer.victory || "挑戰成功！", () => {
+          Game.Audio.play("win");
+          Game.state.defeatedTrainers.push(B.trainer.trainerId);
+          Game.Save.write();
+        })] : []),
+        act(() => finish()),
+      ]),
     ];
   }
 
@@ -122,16 +140,27 @@
     const oldMax = Game.statsOf(monster).maxHp;
     monster.exp += gain;
     monster.level = Rules.levelForExp(monster.exp);
-    if (monster.level <= before) return steps;
-
-    monster.hp += Game.statsOf(monster).maxHp - oldMax;
-    steps.push(say(nameOf(monster) + " 升到 Lv." + monster.level + " 了！"));
+    if (monster.level > before) {
+      monster.hp += Game.statsOf(monster).maxHp - oldMax;
+      steps.push(say(nameOf(monster) + " 升到 Lv." + monster.level + " 了！", () => Game.Audio.play("level")));
+    }
     for (let level = before + 1; level <= monster.level; level += 1) {
       Rules.movesLearnedAt(species, level).forEach((moveId) => {
         if (!Game.moves[moveId] || monster.moves.includes(moveId)) return;
         monster.moves = Rules.addMove(monster.moves, moveId);
         steps.push(say(nameOf(monster) + " 學會了「" + Game.moves[moveId].name + "」！"));
       });
+    }
+    const target = Rules.evolutionTarget(species, before, monster.level);
+    if (target && Object.hasOwn(Game.monsters, target)) {
+      steps.push(say(nameOf(monster) + " 進化成 " + Game.monsters[target].name + "！", () => {
+        const beforeHp = Game.statsOf(monster).maxHp;
+        monster.species = target;
+        const maxHp = Game.statsOf(monster).maxHp;
+        monster.hp = Math.max(1, Math.min(maxHp, monster.hp + maxHp - beforeHp));
+        Game.recordSpecies(target, true);
+        Game.Audio.play("level");
+      }));
     }
     return steps;
   }
@@ -173,6 +202,7 @@
     }
     state.crystals -= 1;
     const chance = Rules.catchChance(speciesOf(B.enemy).catchRate, B.enemy.hp, Game.statsOf(B.enemy).maxHp);
+    Game.Audio.play("crystal");
     B.captureWorks = Math.random() < chance;
     B.captureMs = CAPTURE_MS;
     B.phase = "capture";
@@ -184,7 +214,11 @@
     B.phase = "message";
     if (B.captureWorks) {
       B.queue = [
-        say("收服了 " + nameOf(B.enemy) + "！", () => { Game.state.party.push(B.enemy); }),
+        say("收服了 " + nameOf(B.enemy) + "！", () => {
+          Game.Audio.play("win");
+          Game.state.party.push(B.enemy);
+          Game.recordSpecies(B.enemy.species, true);
+        }),
         act(() => finish()),
       ];
     } else {
@@ -204,7 +238,7 @@
   }
 
   function updateMenu(I) {
-    const count = MENU_ITEMS.length;
+    const count = B.trainer ? 1 : MENU_ITEMS.length;
     if (I.pressed("up") || I.pressed("left")) B.menuCursor = (B.menuCursor + count - 1) % count;
     if (I.pressed("down") || I.pressed("right")) B.menuCursor = (B.menuCursor + 1) % count;
     if (!I.pressed("confirm")) return;
@@ -268,9 +302,10 @@
   function drawBottom() {
     const R = Game.Render;
     if (B.phase === "menu") {
-      R.messageBox(R.wrap(B.message, 250).slice(0, 3));
+      const hints = ["查看招式、威力與命中。", "星晶可收服野生星靈，\n對方血量越低越容易。", "嘗試離開這場野生對戰。"];
+      R.messageBox([B.message, ...hints[B.menuCursor].split("\n")]);
       R.box(290, Game.HEIGHT - 92, 190, 92);
-      MENU_ITEMS.forEach((item, i) => {
+      (B.trainer ? MENU_ITEMS.slice(0, 1) : MENU_ITEMS).forEach((item, i) => {
         const label = i === 1 ? item + "（" + Game.state.crystals + "）" : item;
         const y = Game.HEIGHT - 82 + i * 25;
         R.text(label, 324, y);
@@ -293,12 +328,16 @@
       R.text("命中 " + chosen.accuracy, 346, Game.HEIGHT - 34, { size: 14 });
       return;
     }
-    R.messageBox(R.wrap(B.message, Game.WIDTH - 40).slice(0, 3));
+    const lines = R.wrap(B.message, Game.WIDTH - 40).slice(0, 3);
+    R.messageBox(B.phase === "message" ? R.reveal(lines, B.messageTime).lines : lines);
   }
 
   Game.scenes.battle = {
-    enter(enemy) {
+    enter(opponent) {
+      B.trainer = opponent.enemies ? opponent : null;
+      const enemy = B.trainer ? B.trainer.enemies.shift() : opponent;
       B.enemy = enemy;
+      Game.recordSpecies(enemy.species);
       B.me = firstAlive();
       B.phase = "message";
       B.ended = false;
@@ -309,7 +348,7 @@
       B.myHpShown = B.me.hp;
       B.enemyHpShown = enemy.hp;
       B.queue = [
-        say("野生的 " + nameOf(enemy) + " 跳出來了！"),
+        say(B.trainer ? "星塔守望者派出 " + nameOf(enemy) + "！" : "野生的 " + nameOf(enemy) + " 跳出來了！"),
         say("上吧，" + nameOf(B.me) + "！"),
       ];
       next();
@@ -317,6 +356,7 @@
 
     update(dt) {
       const I = Game.Input;
+      B.messageTime += dt;
       B.myHpShown = approach(B.myHpShown, B.me.hp, dt);
       B.enemyHpShown = approach(B.enemyHpShown, B.enemy.hp, dt);
       if (B.shakeMs > 0) B.shakeMs -= dt;
@@ -327,17 +367,22 @@
         B.captureMs -= dt;
         if (B.captureMs <= 0) finishCapture();
       } else if (B.phase === "message" && I.pressed("confirm")) {
-        next();
+        const lines = Game.Render.wrap(B.message, Game.WIDTH - 40).slice(0, 3);
+        if (!Game.Render.reveal(lines, B.messageTime).complete) B.messageTime = Infinity;
+        else if (B.myHpShown === B.me.hp && B.enemyHpShown === B.enemy.hp) next();
       }
     },
 
     draw() {
       const R = Game.Render;
-      R.rect(0, 0, Game.WIDTH, 132, "#bfe6f5");
-      R.rect(0, 132, Game.WIDTH, 96, "#a7dc8a");
-      R.rect(0, 128, Game.WIDTH, 4, "#8ccf7a");
+      const illustrated = Game.Art.battle(Game.state.player.mapId);
+      if (!illustrated) {
+        R.rect(0, 0, Game.WIDTH, 132, "#bfe6f5");
+        R.rect(0, 132, Game.WIDTH, 96, "#a7dc8a");
+        R.rect(0, 128, Game.WIDTH, 4, "#8ccf7a");
+      }
 
-      R.ctx.fillStyle = "#86c763";
+      R.ctx.fillStyle = illustrated ? "rgba(24, 22, 46, 0.28)" : "#86c763";
       R.ctx.beginPath();
       R.ctx.ellipse(366, 122, 78, 18, 0, 0, Math.PI * 2);
       R.ctx.ellipse(116, 214, 92, 18, 0, 0, Math.PI * 2);
@@ -346,11 +391,11 @@
       const jitter = B.shakeMs > 0 ? (Math.floor(B.shakeMs / 40) % 2 ? 4 : -4) : 0;
       if (B.enemyVisible) {
         const dx = B.shakeSide === "enemy" ? jitter : 0;
-        R.sprite(speciesOf(B.enemy).sprite, 326 + dx, 44, 5);
+        Game.Art.monster(speciesOf(B.enemy), 326 + dx, 44, 5);
       }
       if (B.phase === "capture") drawCrystal(366, 104);
       const myDx = B.shakeSide === "me" ? jitter : 0;
-      R.sprite(speciesOf(B.me).sprite, 68 + myDx, 124, 6, { flip: true });
+      Game.Art.monster(speciesOf(B.me), 68 + myDx, 124, 6, { flip: true });
 
       drawInfo(B.enemy, 16, 18, B.enemyHpShown, false);
       drawInfo(B.me, 262, 142, B.myHpShown, true);

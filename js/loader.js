@@ -7,7 +7,7 @@
 
   const BATCH = 20;
   const MAX_NUMBER = 999;
-  const FOLDERS = ["moves", "monsters", "maps"];
+  const FOLDERS = ["moves", "monsters", "maps", "items"];
 
   const pad = (n) => String(n).padStart(3, "0");
 
@@ -44,11 +44,12 @@
   async function boot() {
     for (const folder of FOLDERS) await loadFolder(folder);
     if (!Game.mapIds.length) Game.loadErrors.push("找不到任何地圖");
-    if (!Game.monsterIds.some((id) => Game.monsters[id].starter)) {
+    const hasStarter = Game.monsterIds.some((id) => Game.monsters[id].starter);
+    if (!hasStarter) {
       Game.loadErrors.push("找不到任何起始星靈");
     }
     Game.showLoadErrors();
-    if (Game.mapIds.length && Game.monsterIds.length) Game.start();
+    if (Game.mapIds.length && hasStarter) Game.start();
   }
 
   boot();

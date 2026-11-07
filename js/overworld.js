@@ -125,6 +125,8 @@
     if (tile && tile.encounter) tryEncounter(map);
   }
 
+  const trainerKey = (map, npc) => map.id + ":" + npc.x + "," + npc.y;
+
   function interact() {
     const p = Game.state.player;
     const map = currentMap();
@@ -132,7 +134,13 @@
     const npc = npcAt(map, p.x + d.x, p.y + d.y);
     if (!npc) return;
     npcFacing[map.npcs.indexOf(npc)] = OPPOSITE[p.dir];
-    let text = npc.text;
+    const trainerId = trainerKey(map, npc);
+    if (npc.trainer && !Game.state.defeatedTrainers.includes(trainerId)) {
+      const enemies = npc.trainer.map(({ monster, level }) => Game.createMonster(monster, level));
+      Game.fade(() => Game.go("battle", { enemies, trainerId, victory: npc.victory }));
+      return;
+    }
+    let text = npc.victory || npc.text;
     if (npc.heal) {
       Game.healParty();
       Game.Save.write();
@@ -199,6 +207,19 @@
       R.box(8, 8, width, 38);
       R.text(map.name, 8 + width / 2, 17, { align: "center" });
     }
+    if (Game.sceneName === "overworld") {
+      const hints = {
+        glimmer_town: "沿小路向右 → 一號草徑",
+        route_one: "淺草安全・深草遇敵｜右下 → 二號草徑",
+        route_two: "深草遇敵・水面不可通行｜向右 → 霧港鎮",
+        mist_harbor: "找照護員補給｜向右 → 星塔",
+        star_tower: Game.state.defeatedTrainers.length ? "第一段冒險完成" : "向右走，挑戰星塔守望者",
+      };
+      if (hints[map.id]) {
+        R.box(8, VIEW_H - 35, VIEW_W - 16, 30);
+        R.text(hints[map.id], 20, VIEW_H - 29, { size: 15 });
+      }
+    }
   }
 
   Game.Overworld = {
@@ -227,12 +248,20 @@
         return;
       }
 
+      const p = Game.state.player;
+      const d = DELTAS[p.dir];
+      const map = currentMap();
+      const trainer = npcAt(map, p.x + d.x, p.y + d.y);
+      if (trainer && trainer.trainer &&
+          !Game.state.defeatedTrainers.includes(trainerKey(map, trainer))) {
+        interact();
+        return;
+      }
       if (I.pressed("confirm")) { interact(); return; }
-      if (I.pressed("cancel")) { Game.go("party"); return; }
+      if (I.pressed("cancel")) { Game.go("fieldMenu"); return; }
 
       const dir = I.dir();
       if (!dir) return;
-      const p = Game.state.player;
       p.dir = dir;
       const nx = p.x + DELTAS[dir].x;
       const ny = p.y + DELTAS[dir].y;
@@ -249,21 +278,29 @@
 
   // 對話：文字框一次顯示 3 行，按確認翻頁。
   let dialogPages = [];
+  let dialogTime = 0;
   Game.scenes.dialog = {
     enter({ text }) {
       const lines = Game.Render.wrap(text, Game.WIDTH - 40);
       dialogPages = [];
+      dialogTime = 0;
       for (let i = 0; i < lines.length; i += 3) dialogPages.push(lines.slice(i, i + 3));
     },
-    update() {
+    update(dt) {
+      dialogTime += dt;
       const I = Game.Input;
       if (!I.pressed("confirm") && !I.pressed("cancel")) return;
+      if (I.pressed("confirm") && !Game.Render.reveal(dialogPages[0], dialogTime).complete) {
+        dialogTime = Infinity;
+        return;
+      }
       dialogPages.shift();
+      dialogTime = 0;
       if (!dialogPages.length) Game.go("overworld:resume");
     },
     draw() {
       drawWorld();
-      Game.Render.messageBox(dialogPages[0] || []);
+      Game.Render.messageBox(Game.Render.reveal(dialogPages[0] || [], dialogTime).lines);
     },
   };
 
@@ -278,7 +315,7 @@
     update() {
       const I = Game.Input;
       const party = Game.state.party;
-      if (I.pressed("cancel")) { Game.go("overworld:resume"); return; }
+      if (I.pressed("cancel")) { Game.go("fieldMenu"); return; }
       if (I.pressed("left") || I.pressed("up")) partyCursor = (partyCursor + party.length - 1) % party.length;
       if (I.pressed("right") || I.pressed("down")) partyCursor = (partyCursor + 1) % party.length;
       if (I.pressed("confirm")) {
@@ -313,6 +350,8 @@
         R.text(m.hp + " / " + stats.maxHp, x + 214, y + 47, { align: "right", size: 13 });
         if (i === partyCursor) R.cursor(x - 2, y + 28);
       });
+      const moves = Game.state.party[partyCursor].moves.map((id) => Game.moves[id].name);
+      R.text("招式 " + moves.join("、"), 16, 270, { color: "#ffffff", size: 13 });
       R.text(partyNote, 16, VIEW_H - 26, { color: "#ffffff", shadow: "#1b2138", size: 14 });
     },
   };

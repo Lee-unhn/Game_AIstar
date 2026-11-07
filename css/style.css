@@ -22,7 +22,9 @@ html, body {
 #screen {
   display: block;
   width: 480px;
-  height: 320px;
+  max-width: calc(100% - 6px);
+  height: auto;
+  aspect-ratio: 3 / 2;
   background: #000;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
@@ -76,7 +78,7 @@ html, body {
 
 .dpad {
   display: grid;
-  grid-template-columns: repeat(3, 52px);
+  grid-template-columns: repeat(3, clamp(44px, 12vw, 52px));
   grid-template-rows: repeat(3, 52px);
 }
 .dpad .up { grid-column: 2; grid-row: 1; }
@@ -84,12 +86,29 @@ html, body {
 .dpad .right { grid-column: 3; grid-row: 2; }
 .dpad .down { grid-column: 2; grid-row: 3; }
 
-.actions { display: flex; gap: 14px; align-items: center; }
-#touch .actions button { width: 68px; height: 68px; border-radius: 50%; }
+.actions { display: flex; gap: clamp(6px, 3vw, 14px); align-items: center; }
+#touch .actions button { width: clamp(48px, 15vw, 68px); height: clamp(48px, 15vw, 68px); border-radius: 50%; }
 #touch .actions .confirm { background: #7a3350; border-color: #c76a8e; margin-bottom: 28px; }
 
 /* 手指操作的裝置才顯示觸控按鈕 */
 @media (pointer: coarse) {
   #touch { display: flex; }
   #hint { display: none; }
+}
+
+#mute {
+  min-height: 36px;
+  padding: 4px 12px;
+  border: 1px solid #6676aa;
+  border-radius: 6px;
+  background: #273254;
+  color: #eef1ff;
+  font: inherit;
+  font-size: 13px;
+}
+@media (pointer: coarse), (max-width: 600px) {
+  #touch { display: flex; padding-inline: 8px; }
+  #hint { display: none; }
+  #app { gap: 6px; justify-content: start; }
+  #mute { min-height: 44px; }
 }

@@ -4,6 +4,7 @@ Game.registerMonster({
   type: "森",
   baseStats: { hp: 55, atk: 36, def: 65, spd: 22 },
   catchRate: 150,
+  evolution: { level: 6, to: "grove_turtle" },
   expYield: 50,
   learnset: [
     { level: 1, move: "moss_bash" },

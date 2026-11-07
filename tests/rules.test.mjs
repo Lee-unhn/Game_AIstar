@@ -117,3 +117,19 @@ test("權重抽選：只抽得到權重大於 0 的項目", () => {
     assert.equal(Rules.pickWeighted(list, () => roll).id, "y");
   }
 });
+
+test("達到進化門檻時升級可進化，舊存檔也能補進化", () => {
+  const evolving = { ...SPECIES, evolution: { level: 6, to: "grove_turtle" } };
+  assert.equal(Rules.evolutionTarget(evolving, 5, 7), "grove_turtle");
+  assert.equal(Rules.evolutionTarget(evolving, 6, 6), null);
+  assert.equal(Rules.evolutionTarget(evolving, 6, 7), "grove_turtle");
+  assert.equal(Rules.evolutionTarget(evolving, Rules.MAX_LEVEL, Rules.MAX_LEVEL), "grove_turtle");
+  assert.equal(Rules.evolutionTarget(SPECIES, 5, 7), null);
+});
+
+test("恢復道具不超過上限，也不能對滿血或倒下星靈使用", () => {
+  assert.equal(Rules.healingAmount(4, 24, 12), 12);
+  assert.equal(Rules.healingAmount(20, 24, 12), 4);
+  assert.equal(Rules.healingAmount(24, 24, 12), 0);
+  assert.equal(Rules.healingAmount(0, 24, 12), 0);
+});

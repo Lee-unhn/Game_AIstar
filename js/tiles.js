@@ -61,7 +61,7 @@
       walkable: true,
       encounter: true,
       sprite: {
-        palette: { a: "#5fb04f", b: "#3a8a3a", c: "#2b6b30" },
+        palette: { a: "#3f844f", b: "#87c969", c: "#29543f" },
         rows: [
           "aaaaaaaaaaaaaaaa",
           "aabaaaabaaaabaaa",
