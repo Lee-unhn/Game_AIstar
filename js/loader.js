@@ -42,12 +42,15 @@
   }
 
   async function boot() {
+    const artReady = Game.Art.preload();
     for (const folder of FOLDERS) await loadFolder(folder);
     if (!Game.mapIds.length) Game.loadErrors.push("找不到任何地圖");
     const hasStarter = Game.monsterIds.some((id) => Game.monsters[id].starter);
     if (!hasStarter) {
       Game.loadErrors.push("找不到任何起始星靈");
     }
+    await artReady;
+    document.getElementById("loading").hidden = true;
     Game.showLoadErrors();
     if (Game.mapIds.length && hasStarter) Game.start();
   }

@@ -27,17 +27,22 @@
     star_tower: { sky: "#25233b", ground: ["#55506e", "#79718f"], path: ["#776a87", "#ae966f"],
       wall: ["#3c3b55", "#28283d"], stone: true },
   };
+  const groundTextures = { glimmer_town: 0, route_one: 1, route_two: 2, mist_harbor: 3, star_tower: 10 };
   const props = { T: "evergreen", g: "tall-grass" };
   const images = new Map();
   const tileStyles = new Map();
 
-  function get(path) {
+  function loadImage(path) {
     if (!images.has(path)) {
       const image = new Image();
       image.src = root + path + ".png";
       images.set(path, image);
     }
-    const image = images.get(path);
+    return images.get(path);
+  }
+
+  function get(path) {
+    const image = loadImage(path);
     return image.complete && image.naturalWidth ? image : null;
   }
 
@@ -87,30 +92,95 @@
     return result;
   }
 
+  function textureIndex(mapId, key) {
+    switch (key) {
+      case ".":
+      case "f": return groundTextures[mapId];
+      case "p": return mapId === "star_tower" ? 11 : mapId === "mist_harbor" ? 3 : 4;
+      case "g":
+      case "T": return 1;
+      case "w": return 5;
+      case "r": return mapId === "mist_harbor" ? 7 : 6;
+      case "#": return mapId === "star_tower" ? 9 : 8;
+      default: return null;
+    }
+  }
+
+  function drawTexture(atlas, index, key, x, y, column, row) {
+    const size = Game.TILE;
+    const largePattern = key === "." || key === "f" || key === "p" || key === "w";
+    const sample = largePattern ? 32 : 64;
+    const sx = (index % 4) * 64 + (largePattern ? (column % 2) * 32 : 0);
+    const sy = Math.floor(index / 4) * 64 + (largePattern ? (row % 2) * 32 : 0);
+    Game.Render.ctx.drawImage(atlas, sx, sy, sample, sample, Math.round(x), Math.round(y), size, size);
+  }
+
+  function personShadow(x, y) {
+    const ctx = Game.Render.ctx;
+    ctx.fillStyle = "rgba(20, 17, 31, 0.38)";
+    ctx.beginPath();
+    ctx.ellipse(Math.round(x + 16), Math.round(y + 28), 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   Game.Art = {
+    preload() {
+      const paths = [
+        "scenes/star-harbor-title", "tiles/overworld",
+        ...new Set(Object.values(backdrops).map((scene) => "scenes/" + scene)),
+        ...Array.from(portraits, (id) => "creatures/" + id),
+        ...["traveler-walk", "healer", "harbor-fisher", "tower-keeper"].map((role) => "people/" + role),
+        ...[...Object.values(props), "signpost", "stone-arch"].map((name) => "props/" + name),
+      ];
+      // 缺圖時繼續啟動，讓繪圖函式使用備用點陣。
+      return Promise.allSettled(paths.map((path) => loadImage(path).decode()));
+    },
     worldColor(mapId) { return themes[mapId]?.sky || "#20304a"; },
-    terrain(mapId, key, tile, x, y) {
+    terrain(mapId, key, tile, x, y, column, row) {
       const style = themes[mapId];
       const R = Game.Render;
       if (!style) { R.sprite(tile.sprite, x, y, 2); return; }
       const size = Game.TILE;
       const prop = props[key];
       const image = prop ? get("props/" + prop) : null;
-      if (image) {
-        const grass = key === "g";
-        R.rect(x, y, size, size, grass ? (style.grass?.[0] || "#3f844f") : style.ground[0]);
-        const margin = grass ? 5 : 1;
-        drawFit(image, x + margin, y + margin, size - 2 * margin, size - 2 * margin);
-        return;
+      const atlas = get("tiles/overworld");
+      const index = textureIndex(mapId, key);
+      if (atlas && index !== null) {
+        drawTexture(atlas, index, key, x, y, column, row);
+        if (key === "f") {
+          R.rect(x + 9, y + 19, 4, 4, "#fff0b6");
+          R.rect(x + 19, y + 11, 3, 3, "#e7a5bb");
+          R.rect(x + 23, y + 21, 3, 3, "#fff0b6");
+        }
+      } else if (image) {
+        R.rect(x, y, size, size, key === "g" ? (style.grass?.[0] || "#3f844f") : style.ground[0]);
+      } else {
+        R.sprite(terrainSprite(mapId, key, tile, style), x, y, 2);
       }
-      R.sprite(terrainSprite(mapId, key, tile, style), x, y, 2);
+      if (image) {
+        if (key === "T") drawFit(image, x, y - 7, size, size + 6);
+        else drawFit(image, x + 3, y + 2, size - 6, size - 4);
+      }
     },
     person(role, x, y, direction, walkFrame = 0) {
+      if (role === "traveler") {
+        const sheet = get("people/traveler-walk");
+        if (!sheet) return false;
+        const row = direction === "down" ? 0 : direction === "up" ? 1 : 2;
+        const flip = direction === "left";
+        const ctx = Game.Render.ctx;
+        personShadow(x, y);
+        ctx.save();
+        ctx.translate(Math.round(x + (flip ? 38 : -6)), Math.round(y - 13));
+        if (flip) ctx.scale(-1, 1);
+        ctx.drawImage(sheet, walkFrame * 48, row * 48, 48, 48, 0, 0, 44, 44);
+        ctx.restore();
+        return true;
+      }
       const image = get("people/" + role);
-      const size = Game.TILE;
       if (!image) return false;
-      const lift = walkFrame === 1 ? 2 : 0;
-      return drawFit(image, x, y - lift, size, size - 1, direction === "left");
+      personShadow(x, y);
+      return drawFit(image, x - 4, y - 8, 40, 39, direction === "left");
     },
     marker(name, x, y) {
       return drawFit(get("props/" + name), x, y, Game.TILE, Game.TILE);
