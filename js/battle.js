@@ -375,11 +375,14 @@
 
     draw() {
       const R = Game.Render;
-      R.rect(0, 0, Game.WIDTH, 132, "#bfe6f5");
-      R.rect(0, 132, Game.WIDTH, 96, "#a7dc8a");
-      R.rect(0, 128, Game.WIDTH, 4, "#8ccf7a");
+      const illustrated = Game.Art.battle(Game.state.player.mapId);
+      if (!illustrated) {
+        R.rect(0, 0, Game.WIDTH, 132, "#bfe6f5");
+        R.rect(0, 132, Game.WIDTH, 96, "#a7dc8a");
+        R.rect(0, 128, Game.WIDTH, 4, "#8ccf7a");
+      }
 
-      R.ctx.fillStyle = "#86c763";
+      R.ctx.fillStyle = illustrated ? "rgba(24, 22, 46, 0.28)" : "#86c763";
       R.ctx.beginPath();
       R.ctx.ellipse(366, 122, 78, 18, 0, 0, Math.PI * 2);
       R.ctx.ellipse(116, 214, 92, 18, 0, 0, Math.PI * 2);
@@ -388,11 +391,11 @@
       const jitter = B.shakeMs > 0 ? (Math.floor(B.shakeMs / 40) % 2 ? 4 : -4) : 0;
       if (B.enemyVisible) {
         const dx = B.shakeSide === "enemy" ? jitter : 0;
-        R.sprite(speciesOf(B.enemy).sprite, 326 + dx, 44, 5);
+        Game.Art.monster(speciesOf(B.enemy), 326 + dx, 44, 5);
       }
       if (B.phase === "capture") drawCrystal(366, 104);
       const myDx = B.shakeSide === "me" ? jitter : 0;
-      R.sprite(speciesOf(B.me).sprite, 68 + myDx, 124, 6, { flip: true });
+      Game.Art.monster(speciesOf(B.me), 68 + myDx, 124, 6, { flip: true });
 
       drawInfo(B.enemy, 16, 18, B.enemyHpShown, false);
       drawInfo(B.me, 262, 142, B.myHpShown, true);
