@@ -168,20 +168,22 @@
     const camX = mapW <= VIEW_W ? (mapW - VIEW_W) / 2 : Math.max(0, Math.min(mapW - VIEW_W, px + t / 2 - VIEW_W / 2));
     const camY = mapH <= VIEW_H ? (mapH - VIEW_H) / 2 : Math.max(0, Math.min(mapH - VIEW_H, py + t / 2 - VIEW_H / 2));
 
-    R.rect(0, 0, VIEW_W, VIEW_H, "#20304a");
+    R.rect(0, 0, VIEW_W, VIEW_H, Game.Art.worldColor(map.id));
     const firstX = Math.floor(camX / t);
     const firstY = Math.floor(camY / t);
     for (let y = firstY; y <= firstY + 11; y += 1) {
       for (let x = firstX; x <= firstX + 16; x += 1) {
         const tile = tileAt(map, x, y);
-        if (tile) R.sprite(tile.sprite, x * t - camX, y * t - camY, 2);
+        if (tile) Game.Art.terrain(map.id, map.tiles[y][x], tile, x * t - camX, y * t - camY);
       }
     }
 
     (map.exits || []).forEach((e) => {
       const ex = e.x * t - camX + t / 2;
       const ey = e.y * t - camY + t / 2;
-      R.ctx.fillStyle = "rgba(255,255,255,0.75)";
+      const marker = e.toMap === "star_tower" || map.id === "star_tower" ? "stone-arch" : "signpost";
+      Game.Art.marker(marker, ex - t / 2, ey - t / 2);
+      R.ctx.fillStyle = "rgba(255,255,255,0.86)";
       R.ctx.fillRect(Math.round(ex - 7), Math.round(ey - 7), 14, 14);
       R.text("出", ex, ey - 7, { size: 13, align: "center", color: "#2c3e66" });
     });
@@ -189,15 +191,27 @@
     const people = (map.npcs || []).map((npc, i) => ({
       y: npc.y * t,
       draw() {
-        const sprite = personSprite(npc.heal ? "healer" : "villager", npcFacing[i] || "down", 0);
-        R.sprite(sprite, npc.x * t - camX, npc.y * t - camY, 2);
+        const dir = npcFacing[i] || "down";
+        const role = npc.heal ? "healer" : npc.trainer ? "tower-keeper" : "harbor-fisher";
+        const x = npc.x * t - camX;
+        const y = npc.y * t - camY;
+        if (!Game.Art.person(role, x, y, dir)) {
+          R.sprite(personSprite(npc.heal ? "healer" : "villager", dir, 0), x, y, 2);
+        }
       },
     }));
     people.push({
       y: py,
       draw() {
         const frame = step ? (walkFrame % 2) + 1 : 0;
-        R.sprite(personSprite("hero", p.dir, frame), px - camX, py - camY, 2, { flip: p.dir === "left" });
+        const x = px - camX;
+        const y = py - camY;
+        if (!Game.Art.person("traveler", x, y, p.dir, frame)) {
+          R.sprite(personSprite("hero", p.dir, frame), x, y, 2, { flip: p.dir === "left" });
+        } else {
+          const d = DELTAS[p.dir];
+          R.rect(x + t / 2 - 2 + d.x * 7, y + t - 3 + d.y * 2, 4, 2, "#ffe27a");
+        }
       },
     });
     people.sort((a, b) => a.y - b.y).forEach((who) => who.draw());
