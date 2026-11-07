@@ -32,13 +32,17 @@
   const images = new Map();
   const tileStyles = new Map();
 
-  function get(path) {
+  function loadImage(path) {
     if (!images.has(path)) {
       const image = new Image();
       image.src = root + path + ".png";
       images.set(path, image);
     }
-    const image = images.get(path);
+    return images.get(path);
+  }
+
+  function get(path) {
+    const image = loadImage(path);
     return image.complete && image.naturalWidth ? image : null;
   }
 
@@ -120,6 +124,17 @@
   }
 
   Game.Art = {
+    preload() {
+      const paths = [
+        "scenes/star-harbor-title", "tiles/overworld",
+        ...new Set(Object.values(backdrops).map((scene) => "scenes/" + scene)),
+        ...Array.from(portraits, (id) => "creatures/" + id),
+        ...["traveler-walk", "healer", "harbor-fisher", "tower-keeper"].map((role) => "people/" + role),
+        ...[...Object.values(props), "signpost", "stone-arch"].map((name) => "props/" + name),
+      ];
+      // 缺圖時繼續啟動，讓繪圖函式使用備用點陣。
+      return Promise.allSettled(paths.map((path) => loadImage(path).decode()));
+    },
     worldColor(mapId) { return themes[mapId]?.sky || "#20304a"; },
     terrain(mapId, key, tile, x, y, column, row) {
       const style = themes[mapId];

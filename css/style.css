@@ -33,7 +33,7 @@ html, body {
   box-sizing: content-box;
 }
 
-#hint {
+#hint, #loading {
   margin: 0;
   padding: 0 16px;
   font-size: 14px;
