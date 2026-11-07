@@ -183,9 +183,12 @@
       const ey = e.y * t - camY + t / 2;
       const marker = e.toMap === "star_tower" || map.id === "star_tower" ? "stone-arch" : "signpost";
       Game.Art.marker(marker, ex - t / 2, ey - t / 2);
-      R.ctx.fillStyle = "rgba(255,255,255,0.86)";
-      R.ctx.fillRect(Math.round(ex - 7), Math.round(ey - 7), 14, 14);
-      R.text("出", ex, ey - 7, { size: 13, align: "center", color: "#2c3e66" });
+      // 金色指向放在木牌或拱門上緣，讓出口維持可辨認。
+      const arrow = e.x === 0 ? "‹" : e.x === map.tiles[0].length - 1 ? "›"
+        : e.y === 0 ? "⌃" : e.y === map.tiles.length - 1 ? "⌄" : "◆";
+      R.text(arrow, ex, ey - 13, {
+        size: 18, align: "center", color: "#ffdb86", shadow: "#493525",
+      });
     });
 
     const people = (map.npcs || []).map((npc, i) => ({

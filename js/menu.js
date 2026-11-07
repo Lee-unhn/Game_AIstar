@@ -11,6 +11,7 @@
   const I = Game.Input;
   let menuIndex = 0;
   let dexIndex = 0;
+  let dexIds = [];
   let itemIndex = 0;
   let targetIndex = null;
   let bagNote = "";
@@ -52,26 +53,44 @@
   };
 
   Game.scenes.dex = {
-    enter() { dexIndex = 0; },
+    enter() {
+      const { caught, seen } = Game.state;
+      const rank = (id) => caught.includes(id) ? 0 : seen.includes(id) ? 1 : 2;
+      dexIds = [...Game.monsterIds].sort((a, b) => rank(a) - rank(b));
+      dexIndex = 0;
+    },
     update() {
       if (I.pressed("cancel")) { Game.go("fieldMenu"); return; }
-      dexIndex = navigate(dexIndex, Game.monsterIds.length);
+      dexIndex = navigate(dexIndex, dexIds.length);
     },
     draw() {
       const { seen, caught } = Game.state;
-      frame("星靈圖鑑　遇過 " + seen.length + "　收服 " + caught.length, "方向鍵瀏覽　取消回選單");
-      const ids = Game.monsterIds;
-      const id = ids[dexIndex];
+      frame("星靈圖鑑", "方向鍵瀏覽　取消回選單");
+      R.text("收服 " + caught.length + "　遇過 " + seen.length + " / " + dexIds.length,
+        462, 17, { align: "right", size: 14, color: "#d9def2" });
+      const first = Math.min(Math.max(0, dexIndex - 2), Math.max(0, dexIds.length - 6));
+      R.box(12, 52, 166, 206);
+      dexIds.slice(first, first + 6).forEach((id, i) => {
+        const y = 63 + i * 30;
+        const selected = first + i === dexIndex;
+        const known = seen.includes(id);
+        const number = String(Game.monsterIds.indexOf(id) + 1).padStart(2, "0");
+        if (selected) R.rect(19, y - 3, 152, 26, "#e8dfca");
+        R.text(number, 27, y + 3, { size: 12, color: "#656781" });
+        R.text(known ? Game.monsters[id].name : "未遇見", 54, y, {
+          size: 15, color: known ? R.COLORS.ink : "#6e7285",
+        });
+        if (caught.includes(id)) R.text("✦", 157, y + 1, { size: 14, color: "#85602e" });
+      });
+      const id = dexIds[dexIndex];
       const species = Game.monsters[id];
-      list(ids.map((key) => {
-        if (!seen.includes(key)) return "？？？";
-        return (caught.includes(key) ? "收服 " : "遇過 ") + Game.monsters[key].name;
-      }), dexIndex, 12, 52, 166);
       R.box(188, 52, 280, 206);
       if (!seen.includes(id)) {
-        R.text("遇到星靈後，這裡會顯示資料。", 202, 78, { size: 15 });
+        R.text("尚未遇見", 205, 75, { size: 17, color: R.COLORS.ink });
+        R.text("遇見這隻星靈後會顯示資料。", 205, 105, { size: 14, color: R.COLORS.inkSoft });
         return;
       }
+      R.text(caught.includes(id) ? "已收服" : "已遇見", 205, 69, { size: 12, color: "#80602e" });
       Game.Art.monster(species, 292, 64, 4);
       R.text(species.name, 204, 142);
       R.typeLabel(species.type, 419, 140);
